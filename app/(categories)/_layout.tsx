@@ -24,6 +24,12 @@ const _Layout = () => {
                     headerShown: false,
                 }} />
             <Tabs.Screen
+                name="sport"
+                options={{
+                    title: 'Sport',
+                    headerShown: false,
+                }} />
+            <Tabs.Screen
                 name="god"
                 options={{
                     title: 'God',
