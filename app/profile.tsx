@@ -1,11 +1,11 @@
-import {View, Text} from 'react-native'
+import {View} from 'react-native'
 import React from 'react'
+import ProfileInput from '../components/ProfileInput'
 
-const Profile = () => {
+export default function ProfileScreen() {
     return (
-        <View>
-            <Text>Profile</Text>
+        <View className="flex-1">
+            <ProfileInput />
         </View>
-    )
+    );
 }
-export default Profile
