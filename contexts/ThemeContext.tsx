@@ -21,6 +21,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const loadTheme = async () => {
       try {
         const savedTheme = await AsyncStorage.getItem('theme');
+        console.log('Loaded theme:', savedTheme); //Debug
         if (savedTheme === 'light' || savedTheme === 'dark') {
           setTheme(savedTheme);
         }
@@ -31,15 +32,12 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     loadTheme();
   }, []);
 
-  // Save theme to AsyncStorage when it changes
-  const toggleTheme = async () => {
+  // Toggle theme and save to AsyncStorage
+  const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
+    console.log('Toggling to:', newTheme); //Debug
     setTheme(newTheme);
-    try {
-      await AsyncStorage.setItem('theme', newTheme);
-    } catch (error) {
-      console.error('Failed to save theme:', error);
-    }
+    AsyncStorage.setItem('theme', newTheme).catch((error) => console.error('Failed to save theme:', error));
   };
 
   return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
