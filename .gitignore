@@ -35,4 +35,9 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# Build outputs
+*.apk
+*.aab
+*.ipa
+
 app-example
