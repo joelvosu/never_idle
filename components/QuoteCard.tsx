@@ -27,7 +27,7 @@ export default function QuoteCard() {
   const renderItem = ({ item }: { item: Quote }) => (
     <View style={{ paddingLeft: screenWidth * 0.05, width: screenWidth }}>
       <View
-        className={`w-[${cardWidth}px] p-4 rounded-3xl shadow-lg elevation-8 border ${
+        className={`w-[${cardWidth}px] p-4 rounded-3xl shadow elevation-8 border ${
           theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
         } flex items-center justify-center`}
         style={{ width: cardWidth, height: cardHeight }}
