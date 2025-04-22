@@ -1,6 +1,7 @@
 import { useContext, useState, useEffect, useRef } from 'react';
 import { Dimensions, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ThemeContext } from '@/contexts/ThemeContext';
+import { CategoryContext } from '@/contexts/CategoryContext';
 import { FontAwesome5, FontAwesome6, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal from 'react-native-modal';
@@ -14,6 +15,7 @@ interface Category {
 
 export default function ConfCategories() {
   const { theme } = useContext(ThemeContext);
+  const { refreshCategories } = useContext(CategoryContext);
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   const addCategoryWidth = screenWidth * 0.44; // 44% width
@@ -69,6 +71,7 @@ export default function ConfCategories() {
     try {
       await AsyncStorage.setItem('categories', JSON.stringify(updatedCategories));
       setCategories(updatedCategories);
+      await refreshCategories(); // Notify home screen
       setCategoryName('');
       setSelectedIcon(null);
       setModalVisible(false);
@@ -86,6 +89,7 @@ export default function ConfCategories() {
     try {
       await AsyncStorage.setItem('categories', JSON.stringify(updatedCategories));
       setCategories(updatedCategories);
+      await refreshCategories(); // Notify home screen
       activeSwipeableRef.current?.close(); // Reset Swipeable
     } catch (error) {
       console.error('Error deleting category:', error);

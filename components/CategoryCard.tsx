@@ -1,21 +1,24 @@
 import { useContext } from 'react';
-import { View, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Dimensions, Text } from 'react-native';
 import { ThemeContext } from '@/contexts/ThemeContext';
 import { router } from 'expo-router';
 import { FontAwesome6 } from '@expo/vector-icons';
 
-export default function CategoryCard() {
+interface CategoryCardProps {
+  category?: { name: string; icon: string };
+}
+
+export default function CategoryCard({ category }: CategoryCardProps) {
   const { theme } = useContext(ThemeContext);
   const screenWidth = Dimensions.get('window').width;
-  const cardSize = screenWidth * 0.4; // 40% of screen width
+  const cardSize = screenWidth * 0.28; // 28% of screen width
 
   return (
-    <TouchableOpacity
-      onPress={() => router.push('/confCategories')}
+    <View
       style={{
         width: cardSize,
         height: cardSize,
-        marginLeft: screenWidth * 0.05, // 5% padding
+        margin: screenWidth * 0.02, // 2% margin for spacing
       }}
     >
       <View
@@ -24,8 +27,25 @@ export default function CategoryCard() {
         }`}
         style={{ width: cardSize, height: cardSize }}
       >
-        <FontAwesome6 name="plus" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+        {category ? (
+          <>
+            <FontAwesome6 name={category.icon} size={32} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+            <Text
+              className={`text-sm mt-2 text-center ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}
+              numberOfLines={1}
+            >
+              {category.name}
+            </Text>
+          </>
+        ) : (
+          <FontAwesome6
+            name="plus"
+            size={32}
+            color={theme === 'light' ? '#1f2937' : '#ffffff'}
+            onPress={() => router.push('/confCategories')}
+          />
+        )}
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }

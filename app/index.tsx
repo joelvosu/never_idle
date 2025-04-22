@@ -1,7 +1,8 @@
 import ThemeToggle from '@/components/ThemeToggle';
 import { ThemeContext } from '@/contexts/ThemeContext';
+import { CategoryContext } from '@/contexts/CategoryContext';
 import { useContext } from 'react';
-import { View, Dimensions, Text } from 'react-native';
+import { View, Dimensions, Text, FlatList, TouchableOpacity } from 'react-native';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import QuoteCard from '@/components/QuoteCard';
@@ -9,9 +10,20 @@ import CategoryCard from '@/components/CategoryCard';
 
 export default function Home() {
   const { theme } = useContext(ThemeContext);
+  const { categories } = useContext(CategoryContext);
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   const quoteCardHeight = screenHeight * 0.15; // 15% of screen height
+
+  const renderCategory = ({ item }: { item: { name: string; icon: string } }) => (
+    <TouchableOpacity
+      onPress={() => {
+        // Define action later (e.g., navigate to tasks for this category)
+      }}
+    >
+      <CategoryCard category={item} />
+    </TouchableOpacity>
+  );
 
   return (
     <View className={`flex-1 ${theme === 'light' ? 'bg-blue-100' : 'bg-gray-900'}`}>
@@ -62,9 +74,21 @@ export default function Home() {
           top: 64 + quoteCardHeight + 30, // 30px spacing
           left: 0,
           right: 0,
+          bottom: 0,
         }}
       >
-        <CategoryCard />
+        <FlatList
+          data={
+            categories.length > 0 ? categories : [{ name: '', icon: '' }] // Placeholder for "plus" card
+          }
+          renderItem={({ item }) => (item.name ? renderCategory({ item }) : <CategoryCard />)}
+          keyExtractor={(item, index) => (item.name ? `${item.name}-${index}` : 'plus')}
+          numColumns={3}
+          contentContainerStyle={{
+            paddingHorizontal: screenWidth * 0.02,
+            paddingBottom: 16,
+          }}
+        />
       </View>
     </View>
   );
