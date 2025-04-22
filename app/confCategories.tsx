@@ -1,10 +1,11 @@
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import { Dimensions, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ThemeContext } from '@/contexts/ThemeContext';
 import { FontAwesome5, FontAwesome6, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal from 'react-native-modal';
 import { fontAwesomeIcons } from '@/data/fontAwesomeIcons';
+import { Swipeable } from 'react-native-gesture-handler';
 
 interface Category {
   name: string;
@@ -23,11 +24,16 @@ export default function ConfCategories() {
 
   // Modal state
   const [isModalVisible, setModalVisible] = useState(false);
+  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
+  const [editCategoryIndex, setEditCategoryIndex] = useState<number | null>(null);
   const [categoryName, setCategoryName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
 
   // Categories state
   const [categories, setCategories] = useState<Category[]>([]);
+
+  // Swipeable ref
+  const activeSwipeableRef = useRef<Swipeable | null>(null);
 
   // Load categories from AsyncStorage
   useEffect(() => {
@@ -45,46 +51,142 @@ export default function ConfCategories() {
   }, []);
 
   // Save category to AsyncStorage
-  const handleCreateCategory = async () => {
+  const handleSaveCategory = async () => {
     if (!categoryName.trim() || !selectedIcon) {
       alert('Please enter a category name and select an icon');
       return;
     }
     const newCategory = { name: categoryName.trim(), icon: selectedIcon };
-    const updatedCategories = [...categories, newCategory];
+    let updatedCategories: Category[];
+    if (modalMode === 'add') {
+      updatedCategories = [...categories, newCategory];
+    } else {
+      updatedCategories = [...categories];
+      if (editCategoryIndex !== null) {
+        updatedCategories[editCategoryIndex] = newCategory;
+      }
+    }
     try {
       await AsyncStorage.setItem('categories', JSON.stringify(updatedCategories));
       setCategories(updatedCategories);
       setCategoryName('');
       setSelectedIcon(null);
       setModalVisible(false);
+      setModalMode('add');
+      setEditCategoryIndex(null);
+      activeSwipeableRef.current?.close(); // Reset Swipeable
     } catch (error) {
       console.error('Error saving categories:', error);
     }
   };
 
-  // Render displayCategory
-  const renderCategory = ({ item }: { item: Category }) => (
-    <View
-      style={{
-        width: displayCategoryWidth,
-        height: displayCategoryHeight,
-        marginVertical: 2.5, // ~5px total padding
-      }}
-    >
-      <View
-        className={`flex-row items-center border rounded-3xl shadow elevation-8 ${
-          theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
-        }`}
-        style={{ width: displayCategoryWidth, height: displayCategoryHeight, paddingHorizontal: 16 }}
+  // Delete category
+  const handleDeleteCategory = async (index: number) => {
+    const updatedCategories = categories.filter((_, i) => i !== index);
+    try {
+      await AsyncStorage.setItem('categories', JSON.stringify(updatedCategories));
+      setCategories(updatedCategories);
+      activeSwipeableRef.current?.close(); // Reset Swipeable
+    } catch (error) {
+      console.error('Error deleting category:', error);
+    }
+  };
+
+  // Open Edit modal
+  const handleEditCategory = (index: number) => {
+    const category = categories[index];
+    setModalMode('edit');
+    setEditCategoryIndex(index);
+    setCategoryName(category.name);
+    setSelectedIcon(category.icon);
+    setModalVisible(true);
+  };
+
+  // Render displayCategory with swipe actions
+  const renderCategory = ({ item, index }: { item: Category; index: number }) => {
+    const renderLeftActions = () => (
+      <TouchableOpacity
+        onPress={() => handleEditCategory(index)}
+        style={{
+          width: screenWidth * 0.18,
+          height: displayCategoryHeight,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
       >
-        <FontAwesome6 name={item.icon} size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
-        <Text className={`text-base ml-4 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`} numberOfLines={1}>
-          {item.name}
-        </Text>
+        <View
+          className={`flex-row items-center justify-center h-full rounded-3xl border ${
+            theme === 'light' ? 'bg-blue-400 border-gray-300' : 'bg-blue-600 border-gray-600'
+          }`}
+          style={{ width: '100%', paddingHorizontal: 8 }}
+        >
+          <MaterialCommunityIcons name="pencil" size={24} color="#ffffff" />
+          <Text className="text-sm text-white ml-2">Edit</Text>
+        </View>
+      </TouchableOpacity>
+    );
+
+    const renderRightActions = () => (
+      <TouchableOpacity
+        onPress={() => handleDeleteCategory(index)}
+        style={{
+          width: screenWidth * 0.18,
+          height: displayCategoryHeight,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <View
+          className={`flex-row items-center justify-center h-full rounded-3xl border ${
+            theme === 'light' ? 'bg-red-400 border-gray-300' : 'bg-red-600 border-gray-600'
+          }`}
+          style={{ width: '100%', paddingHorizontal: 8 }}
+        >
+          <MaterialCommunityIcons name="delete" size={24} color="#ffffff" />
+          <Text className="text-sm text-white ml-2">Delete</Text>
+        </View>
+      </TouchableOpacity>
+    );
+
+    return (
+      <View
+        style={{
+          width: displayCategoryWidth,
+          height: displayCategoryHeight,
+          marginVertical: 2.5,
+        }}
+      >
+        <Swipeable
+          ref={(ref) => {
+            if (ref) activeSwipeableRef.current = ref;
+          }}
+          friction={1}
+          leftThreshold={50}
+          rightThreshold={50}
+          renderLeftActions={renderLeftActions}
+          renderRightActions={renderRightActions}
+          onSwipeableOpen={() => {
+            activeSwipeableRef.current = activeSwipeableRef.current || null;
+          }}
+        >
+          <View
+            className={`flex-row items-center border rounded-3xl shadow elevation-8 ${
+              theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
+            }`}
+            style={{ width: displayCategoryWidth, height: displayCategoryHeight, paddingHorizontal: 16 }}
+          >
+            <FontAwesome6 name={item.icon} size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+            <Text
+              className={`text-base ml-4 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}
+              numberOfLines={1}
+            >
+              {item.name}
+            </Text>
+          </View>
+        </Swipeable>
       </View>
-    </View>
-  );
+    );
+  };
 
   // Render icon in FlatList
   const renderIcon = ({ item }: { item: string }) => (
@@ -112,14 +214,21 @@ export default function ConfCategories() {
         data={categories}
         renderItem={renderCategory}
         keyExtractor={(item, index) => `${item.name}-${index}`}
-        style={{ marginTop: 16, marginBottom: elementHeight + 32 }} // Space for bottom row
+        style={{ marginTop: 16, marginBottom: elementHeight + 32 }}
         contentContainerStyle={{ paddingHorizontal: 16 }}
       />
 
-      {/* Modal for Add Category */}
+      {/* Modal for Add/Edit Category */}
       <Modal
         isVisible={isModalVisible}
-        onBackdropPress={() => setModalVisible(false)}
+        onBackdropPress={() => {
+          setModalVisible(false);
+          setModalMode('add');
+          setEditCategoryIndex(null);
+          setCategoryName('');
+          setSelectedIcon(null);
+          activeSwipeableRef.current?.close(); // Reset Swipeable
+        }}
         style={{ justifyContent: 'center', alignItems: 'center', margin: 0 }}
       >
         <View
@@ -127,7 +236,7 @@ export default function ConfCategories() {
           style={{ width: screenWidth * 0.8, maxHeight: screenHeight * 0.7, alignSelf: 'center' }}
         >
           <Text className={`text-lg font-bold ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
-            Category Name
+            {modalMode === 'add' ? 'Category Name' : 'Edit Category Name'}
           </Text>
           <TextInput
             className={`border rounded-lg p-2 mt-2 ${
@@ -140,7 +249,7 @@ export default function ConfCategories() {
           />
 
           <Text className={`text-lg font-bold mt-4 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
-            Category Image
+            {modalMode === 'add' ? 'Category Image' : 'Edit Category Image'}
           </Text>
           <FlatList
             data={fontAwesomeIcons}
@@ -153,7 +262,7 @@ export default function ConfCategories() {
             overScrollMode="never"
           />
 
-          {/* Modal Footer: Cancel and Create Buttons */}
+          {/* Modal Footer: Cancel and Create/Modify Buttons */}
           <View
             style={{
               flexDirection: 'row',
@@ -163,7 +272,14 @@ export default function ConfCategories() {
           >
             {/* Cancel Button */}
             <TouchableOpacity
-              onPress={() => setModalVisible(false)}
+              onPress={() => {
+                setModalVisible(false);
+                setModalMode('add');
+                setEditCategoryIndex(null);
+                setCategoryName('');
+                setSelectedIcon(null);
+                activeSwipeableRef.current?.close(); // Reset Swipeable
+              }}
               style={{
                 width: addCategoryWidth * 0.6,
                 height: elementHeight * 0.8,
@@ -180,9 +296,9 @@ export default function ConfCategories() {
               </View>
             </TouchableOpacity>
 
-            {/* Create Category Button */}
+            {/* Create/Modify Category Button */}
             <TouchableOpacity
-              onPress={handleCreateCategory}
+              onPress={handleSaveCategory}
               style={{
                 width: addCategoryWidth * 0.6,
                 height: elementHeight * 0.8,
@@ -196,7 +312,7 @@ export default function ConfCategories() {
               >
                 <FontAwesome5 name="folder-plus" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
                 <Text className={`text-sm ml-2 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
-                  Create Category
+                  {modalMode === 'add' ? 'Create Category' : 'Modify Category'}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -217,7 +333,12 @@ export default function ConfCategories() {
       >
         {/* Add Category */}
         <TouchableOpacity
-          onPress={() => setModalVisible(true)}
+          onPress={() => {
+            setModalMode('add');
+            setCategoryName('');
+            setSelectedIcon(null);
+            setModalVisible(true);
+          }}
           style={{
             width: addCategoryWidth,
             height: elementHeight,
