@@ -1,9 +1,10 @@
+import { useContext, useState, useEffect } from 'react';
+import { Dimensions, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ThemeContext } from '@/contexts/ThemeContext';
-import { useContext, useEffect, useState } from 'react';
-import { Dimensions, FlatList, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { FontAwesome5, FontAwesome6, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome5, FontAwesome6, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal from 'react-native-modal';
+import { fontAwesomeIcons } from '@/data/fontAwesomeIcons';
 
 interface Category {
   name: string;
@@ -18,7 +19,7 @@ export default function ConfCategories() {
   const backupRestoreWidth = screenWidth * 0.22; // 22% width
   const elementHeight = screenWidth * 0.22; // 22% width height
   const displayCategoryWidth = screenWidth * 0.9; // 90% width
-  const displayCategoryHeight = screenHeight * 0.07; // 9% height
+  const displayCategoryHeight = screenHeight * 0.07; // 7% height
 
   // Modal state
   const [isModalVisible, setModalVisible] = useState(false);
@@ -27,87 +28,6 @@ export default function ConfCategories() {
 
   // Categories state
   const [categories, setCategories] = useState<Category[]>([]);
-
-  // Sample FontAwesome6 icons (curated list for simplicity; expand as needed)
-  const fontAwesomeIcons = [
-    'at',
-    'trash-can',
-    'stethoscope',
-    'message',
-    'file-text',
-    'calendar-days',
-    'volleyball',
-    'icons',
-    'fingerprint',
-    'flag-checkered',
-    'people-roof',
-    'person',
-    'laptop',
-    'address-book',
-    'pencil',
-    'comments',
-    'paw',
-    'gavel',
-    'binoculars',
-    'motorcycle',
-    'scissors',
-    'film',
-    'feather',
-    'volume-low',
-    'list',
-    'campground',
-    'tree',
-    'edit',
-    'car-side',
-    'bag-shopping',
-    'bicycle',
-    'snowman',
-    'school',
-    'horse',
-    'capsules',
-    'umbrella-beach',
-    'pen-clip',
-    'cross',
-    'passport',
-    'people-carry-box',
-    'microchip',
-    'champagne-glasses',
-    'mug-hot',
-    'train',
-    'cow',
-    'suitcase',
-    'seedling',
-    'children',
-    'church',
-    'puzzle-piece',
-    'code',
-    'file-contract',
-    'poop',
-    'toilet-paper',
-    'wrench',
-    'cat',
-    'wine-glass',
-    'basket-shopping',
-    'file-code',
-    'house-chimney',
-    'hand-holding-dollar',
-    'phone',
-    'book-bible',
-    'paperclip',
-    'person-skiing-nordic',
-    'coins',
-    'person-hiking',
-    'calculator',
-    'guitar',
-    'paint-roller',
-    'user-graduate',
-    'gun',
-    'tractor',
-    'person-praying',
-    'dog',
-    'music',
-    'gifts',
-  ];
 
   // Load categories from AsyncStorage
   useEffect(() => {
@@ -149,7 +69,7 @@ export default function ConfCategories() {
       style={{
         width: displayCategoryWidth,
         height: displayCategoryHeight,
-        marginVertical: 2.5, //5px total padding
+        marginVertical: 2.5, // ~5px total padding
       }}
     >
       <View
@@ -164,6 +84,25 @@ export default function ConfCategories() {
         </Text>
       </View>
     </View>
+  );
+
+  // Render icon in FlatList
+  const renderIcon = ({ item }: { item: string }) => (
+    <TouchableOpacity
+      onPress={() => setSelectedIcon(item)}
+      style={{
+        width: '23%',
+        aspectRatio: 1,
+        margin: '1%',
+        borderWidth: selectedIcon === item ? 2 : 0,
+        borderColor: theme === 'light' ? '#1f2937' : '#ffffff',
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <FontAwesome6 name={item} size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+    </TouchableOpacity>
   );
 
   return (
@@ -181,11 +120,11 @@ export default function ConfCategories() {
       <Modal
         isVisible={isModalVisible}
         onBackdropPress={() => setModalVisible(false)}
-        style={{ justifyContent: 'center', margin: 16 }}
+        style={{ justifyContent: 'center', alignItems: 'center', margin: 0 }}
       >
         <View
           className={`rounded-2xl p-6 ${theme === 'light' ? 'bg-white' : 'bg-gray-800'}`}
-          style={{ justifyContent: 'center', margin: 16 }}
+          style={{ width: screenWidth * 0.8, maxHeight: screenHeight * 0.7, alignSelf: 'center' }}
         >
           <Text className={`text-lg font-bold ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
             Category Name
@@ -203,50 +142,65 @@ export default function ConfCategories() {
           <Text className={`text-lg font-bold mt-4 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
             Category Image
           </Text>
-          <ScrollView style={{ maxHeight: 200, marginTop: 8 }}>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-              {fontAwesomeIcons.map((icon) => (
-                <TouchableOpacity
-                  key={icon}
-                  onPress={() => setSelectedIcon(icon)}
-                  style={{
-                    width: '23%',
-                    aspectRatio: 1,
-                    margin: '1%',
-                    borderWidth: selectedIcon === icon ? 2 : 0,
-                    borderColor: theme === 'light' ? '1f2937' : '#ffffff',
-                    borderRadius: 8,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  <FontAwesome6 name={icon} size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
+          <FlatList
+            data={fontAwesomeIcons}
+            renderItem={renderIcon}
+            keyExtractor={(item) => item}
+            numColumns={4}
+            style={{ maxHeight: 200, marginTop: 8 }}
+            contentContainerStyle={{ paddingBottom: 8 }}
+            bounces={false}
+            overScrollMode="never"
+          />
 
-          <TouchableOpacity
-            onPress={handleCreateCategory}
+          {/* Modal Footer: Cancel and Create Buttons */}
+          <View
             style={{
-              width: addCategoryWidth * 0.6,
-              height: elementHeight * 0.8,
-              alignSelf: 'flex-end',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
               marginTop: 16,
             }}
           >
-            <View
-              className={`flex-row items-center justify-center border rounded-3xl shadow elevation-8 ${
-                theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
-              }`}
-              style={{ width: '100%', height: '100%', paddingHorizontal: 16 }}
+            {/* Cancel Button */}
+            <TouchableOpacity
+              onPress={() => setModalVisible(false)}
+              style={{
+                width: addCategoryWidth * 0.6,
+                height: elementHeight * 0.8,
+              }}
             >
-              <FontAwesome5 name="folder-plus" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
-              <Text className={`text-sm ml-2 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
-                Create Category
-              </Text>
-            </View>
-          </TouchableOpacity>
+              <View
+                className={`flex-row items-center justify-center border rounded-3xl shadow elevation-8 ${
+                  theme === 'light' ? 'bg-red-200 border-gray-300' : 'bg-red-900 border-gray-600'
+                }`}
+                style={{ width: '100%', height: '100%', paddingHorizontal: 16 }}
+              >
+                <MaterialCommunityIcons name="cancel" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+                <Text className={`text-sm ml-2 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>Cancel</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Create Category Button */}
+            <TouchableOpacity
+              onPress={handleCreateCategory}
+              style={{
+                width: addCategoryWidth * 0.6,
+                height: elementHeight * 0.8,
+              }}
+            >
+              <View
+                className={`flex-row items-center justify-center border rounded-3xl shadow elevation-8 ${
+                  theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
+                }`}
+                style={{ width: '100%', height: '100%', paddingHorizontal: 16 }}
+              >
+                <FontAwesome5 name="folder-plus" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+                <Text className={`text-sm ml-2 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
+                  Create Category
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
 
