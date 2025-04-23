@@ -2,7 +2,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import { ThemeContext } from '@/contexts/ThemeContext';
 import { CategoryContext } from '@/contexts/CategoryContext';
 import { useContext } from 'react';
-import { View, Dimensions, Text, FlatList, TouchableOpacity } from 'react-native';
+import { View, Dimensions, Text, FlatList } from 'react-native';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import QuoteCard from '@/components/QuoteCard';
@@ -15,15 +15,7 @@ export default function Home() {
   const screenHeight = Dimensions.get('window').height;
   const quoteCardHeight = screenHeight * 0.15; // 15% of screen height
 
-  const renderCategory = ({ item }: { item: { name: string; icon: string } }) => (
-    <TouchableOpacity
-      onPress={() => {
-        // Define action later (e.g., navigate to tasks for this category)
-      }}
-    >
-      <CategoryCard category={item} />
-    </TouchableOpacity>
-  );
+  const renderCategory = ({ item }: { item: { name: string; icon: string } }) => <CategoryCard category={item} />;
 
   return (
     <View className={`flex-1 ${theme === 'light' ? 'bg-blue-100' : 'bg-gray-900'}`}>
