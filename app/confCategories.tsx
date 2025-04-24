@@ -1,7 +1,8 @@
 import { useContext, useState, useEffect, useRef } from 'react';
-import { Dimensions, FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Dimensions, FlatList, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import { ThemeContext } from '@/contexts/ThemeContext';
 import { CategoryContext } from '@/contexts/CategoryContext';
+import { TodoContext } from '@/contexts/TodoContext';
 import { FontAwesome5, FontAwesome6, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal from 'react-native-modal';
@@ -16,6 +17,7 @@ interface Category {
 export default function ConfCategories() {
   const { theme } = useContext(ThemeContext);
   const { refreshCategories } = useContext(CategoryContext);
+  const { todos, updateCategoryInTodos } = useContext(TodoContext);
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   const addCategoryWidth = screenWidth * 0.44; // 44% width
@@ -65,7 +67,10 @@ export default function ConfCategories() {
     } else {
       updatedCategories = [...categories];
       if (editCategoryIndex !== null) {
+        const oldCategoryName = categories[editCategoryIndex].name;
         updatedCategories[editCategoryIndex] = newCategory;
+        // Update todos with new category name
+        await updateCategoryInTodos(oldCategoryName, newCategory.name);
       }
     }
     try {
@@ -85,6 +90,13 @@ export default function ConfCategories() {
 
   // Delete category
   const handleDeleteCategory = async (index: number) => {
+    const categoryName = categories[index].name;
+    const hasTodos = todos.some((todo) => todo.category === categoryName);
+    if (hasTodos) {
+      Alert.alert('Error', 'Category not empty!');
+      activeSwipeableRef.current?.close();
+      return;
+    }
     const updatedCategories = categories.filter((_, i) => i !== index);
     try {
       await AsyncStorage.setItem('categories', JSON.stringify(updatedCategories));
