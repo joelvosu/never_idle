@@ -5,12 +5,13 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 
 interface TodoCardProps {
-  todo?: { id: string; name: string; completed: boolean };
+  todo?: { id: string; name: string; completed: boolean; comment: string };
   isInputCard?: boolean;
   onSave?: (name: string) => void;
   onToggleComplete?: (id: string) => void;
   onEdit?: (id: string, name: string, swipeable: Swipeable | null) => void;
   onDelete?: (id: string) => void;
+  onViewComment?: (comment: string, name: string) => void;
 }
 
 export default function TodoCard({
@@ -20,6 +21,7 @@ export default function TodoCard({
   onToggleComplete,
   onEdit,
   onDelete,
+  onViewComment,
 }: TodoCardProps) {
   const { theme } = useContext(ThemeContext);
   const screenWidth = Dimensions.get('window').width;
@@ -169,6 +171,14 @@ export default function TodoCard({
           <Text className={`flex-1 text-base ${textColor} ${todo.completed ? 'line-through' : ''}`} numberOfLines={1}>
             {todo.name}
           </Text>
+          {todo.comment.trim() && (
+            <TouchableOpacity
+              onPress={() => onViewComment && onViewComment(todo.comment, todo.name)}
+              style={{ marginLeft: 8 }}
+            >
+              <MaterialCommunityIcons name="sticker-text-outline" size={24} color={iconColor} />
+            </TouchableOpacity>
+          )}
         </View>
       </Swipeable>
     </View>

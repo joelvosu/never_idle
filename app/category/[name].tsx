@@ -22,6 +22,10 @@ export default function CategoryPage() {
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [editTodoId, setEditTodoId] = useState<string | null>(null);
   const [editTodoName, setEditTodoName] = useState('');
+  const [editTodoComment, setEditTodoComment] = useState('');
+  const [isCommentModalVisible, setCommentModalVisible] = useState(false);
+  const [currentComment, setCurrentComment] = useState('');
+  const [currentTodoName, setCurrentTodoName] = useState('');
   const activeSwipeableRef = useRef<Swipeable | null>(null);
 
   // Find the category by name
@@ -34,7 +38,7 @@ export default function CategoryPage() {
   // Combine data for FlatList: uncompleted, spacer, completed
   const listData = [
     ...uncompletedTodos,
-    ...(completedTodos.length > 0 ? [{ id: 'spacer', name: '', completed: false, isSpacer: true }] : []),
+    ...(completedTodos.length > 0 ? [{ id: 'spacer', name: '', completed: false, isSpacer: true, comment: '' }] : []),
     ...completedTodos,
   ];
 
@@ -48,6 +52,7 @@ export default function CategoryPage() {
       name: todoName,
       category: category.name,
       completed: false,
+      comment: '',
     };
     try {
       const updatedTodos = [...todos, newTodo];
@@ -72,6 +77,8 @@ export default function CategoryPage() {
     activeSwipeableRef.current = swipeable;
     setEditTodoId(id);
     setEditTodoName(name);
+    const todo = todos.find((t) => t.id === id);
+    setEditTodoComment(todo ? todo.comment : '');
     setEditModalVisible(true);
   };
 
@@ -80,13 +87,16 @@ export default function CategoryPage() {
       console.error('Invalid editTodoId or empty name');
       return;
     }
-    const updatedTodos = todos.map((todo) => (todo.id === editTodoId ? { ...todo, name: editTodoName.trim() } : todo));
+    const updatedTodos = todos.map((todo) =>
+      todo.id === editTodoId ? { ...todo, name: editTodoName.trim(), comment: editTodoComment } : todo
+    );
     try {
       await AsyncStorage.setItem('todoItems', JSON.stringify(updatedTodos));
       await refreshTodos();
       setEditModalVisible(false);
       setEditTodoId(null);
       setEditTodoName('');
+      setEditTodoComment('');
       activeSwipeableRef.current?.close();
     } catch (error) {
       console.error('Error saving edited todo:', error);
@@ -104,7 +114,17 @@ export default function CategoryPage() {
     }
   };
 
-  const renderTodo = ({ item }: { item: { id: string; name: string; completed: boolean; isSpacer?: boolean } }) => {
+  const handleViewComment = (comment: string, todoName: string) => {
+    setCurrentComment(comment);
+    setCurrentTodoName(todoName);
+    setCommentModalVisible(true);
+  };
+
+  const renderTodo = ({
+    item,
+  }: {
+    item: { id: string; name: string; completed: boolean; isSpacer?: boolean; comment: string };
+  }) => {
     if (item.isSpacer) {
       return <View style={{ height: 16 }} />; // 16px gap between groups
     }
@@ -114,6 +134,7 @@ export default function CategoryPage() {
         onToggleComplete={handleToggleComplete}
         onEdit={handleEditTodo}
         onDelete={handleDeleteTodo}
+        onViewComment={handleViewComment}
       />
     );
   };
@@ -187,6 +208,7 @@ export default function CategoryPage() {
           setEditModalVisible(false);
           setEditTodoId(null);
           setEditTodoName('');
+          setEditTodoComment('');
           activeSwipeableRef.current?.close();
         }}
         style={{ justifyContent: 'center', alignItems: 'center', margin: 0 }}
@@ -196,7 +218,7 @@ export default function CategoryPage() {
           style={{ width: screenWidth * 0.8, alignSelf: 'center' }}
         >
           <Text className={`text-lg font-bold ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
-            Placeholder
+            {editTodoName || 'Unnamed'}
           </Text>
           <TextInput
             className={`border rounded-lg p-2 mt-2 ${
@@ -206,6 +228,21 @@ export default function CategoryPage() {
             onChangeText={setEditTodoName}
             placeholder="Edit to-do item"
             placeholderTextColor={theme === 'light' ? '#9CA3AF' : '#6B7280'}
+          />
+          <Text className={`text-lg font-bold mt-4 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
+            Comment
+          </Text>
+          <TextInput
+            className={`border rounded-lg p-2 mt-2 ${
+              theme === 'light' ? 'border-gray-300 text-gray-800' : 'border-gray-600 text-gray-100'
+            }`}
+            value={editTodoComment}
+            onChangeText={setEditTodoComment}
+            placeholder="Add a comment"
+            placeholderTextColor={theme === 'light' ? '#9CA3AF' : '#6B7280'}
+            multiline
+            numberOfLines={5}
+            style={{ height: 100, textAlignVertical: 'top' }}
           />
           <View
             style={{
@@ -220,6 +257,7 @@ export default function CategoryPage() {
                 setEditModalVisible(false);
                 setEditTodoId(null);
                 setEditTodoName('');
+                setEditTodoComment('');
                 activeSwipeableRef.current?.close();
               }}
               style={{
@@ -261,6 +299,49 @@ export default function CategoryPage() {
               </View>
             </TouchableOpacity>
           </View>
+        </View>
+      </Modal>
+
+      {/* Comment Display Modal */}
+      <Modal
+        isVisible={isCommentModalVisible}
+        onBackdropPress={() => setCommentModalVisible(false)}
+        style={{ justifyContent: 'center', alignItems: 'center', margin: 0 }}
+      >
+        <View
+          className={`rounded-2xl p-6 ${theme === 'light' ? 'bg-white' : 'bg-gray-800'}`}
+          style={{ width: screenWidth * 0.8, alignSelf: 'center' }}
+        >
+          <Text
+            className={`text-lg font-bold ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}
+            style={{ marginBottom: 8 }}
+          >
+            {currentTodoName || 'Unnamed'}
+          </Text>
+          <Text
+            className={`text-base ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}
+            style={{ marginBottom: 16 }}
+          >
+            {currentComment || 'No comment'}
+          </Text>
+          <TouchableOpacity
+            onPress={() => setCommentModalVisible(false)}
+            style={{
+              width: screenWidth * 0.8 * 0.45,
+              height: screenWidth * 0.12,
+              alignSelf: 'center',
+            }}
+          >
+            <View
+              className={`flex-row items-center justify-center border rounded-3xl shadow elevation-8 ${
+                theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
+              }`}
+              style={{ width: '100%', height: '100%', paddingHorizontal: 16 }}
+            >
+              <MaterialCommunityIcons name="close" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+              <Text className={`text-sm ml-2 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>Close</Text>
+            </View>
+          </TouchableOpacity>
         </View>
       </Modal>
     </View>

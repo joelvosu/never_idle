@@ -6,6 +6,7 @@ interface TodoItem {
   name: string; // ToDo item name
   category: string; // Category name
   completed: boolean; // Checkbox state
+  comment: string; // Comment for the ToDo item
 }
 
 interface TodoContextType {
