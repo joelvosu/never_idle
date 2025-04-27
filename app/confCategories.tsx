@@ -3,10 +3,12 @@ import { Dimensions, FlatList, Text, TextInput, TouchableOpacity, View, Alert } 
 import { ThemeContext } from '@/contexts/ThemeContext';
 import { CategoryContext } from '@/contexts/CategoryContext';
 import { TodoContext } from '@/contexts/TodoContext';
-import { FontAwesome5, FontAwesome6, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { FontAwesome5, FontAwesome6, MaterialIcons, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal from 'react-native-modal';
 import { fontAwesomeIcons } from '@/data/fontAwesomeIcons';
+import { router } from 'expo-router';
+import CategoryListItem from '@/components/CategoryListItem';
 import { Swipeable } from 'react-native-gesture-handler';
 
 interface Category {
@@ -20,11 +22,8 @@ export default function ConfCategories() {
   const { todos, updateCategoryInTodos } = useContext(TodoContext);
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
-  const addCategoryWidth = screenWidth * 0.44; // 44% width
-  const backupRestoreWidth = screenWidth * 0.22; // 22% width
-  const elementHeight = screenWidth * 0.22; // 22% width height
-  const displayCategoryWidth = screenWidth * 0.9; // 90% width
-  const displayCategoryHeight = screenHeight * 0.07; // 7% height
+  const cardSize = screenWidth * 0.28; // Same as CategoryCard
+  const addCategorySize = screenWidth * 0.12; // Matches round "+" button
 
   // Modal state
   const [isModalVisible, setModalVisible] = useState(false);
@@ -57,7 +56,7 @@ export default function ConfCategories() {
   // Save category to AsyncStorage
   const handleSaveCategory = async () => {
     if (!categoryName.trim() || !selectedIcon) {
-      alert('Please enter a category name and select an icon');
+      Alert.alert('Error', 'Please enter a category name and select an icon');
       return;
     }
     const newCategory = { name: categoryName.trim(), icon: selectedIcon };
@@ -109,99 +108,14 @@ export default function ConfCategories() {
   };
 
   // Open Edit modal
-  const handleEditCategory = (index: number) => {
+  const handleEditCategory = (index: number, swipeable: Swipeable | null) => {
+    activeSwipeableRef.current = swipeable;
     const category = categories[index];
     setModalMode('edit');
     setEditCategoryIndex(index);
     setCategoryName(category.name);
     setSelectedIcon(category.icon);
     setModalVisible(true);
-  };
-
-  // Render displayCategory with swipe actions
-  const renderCategory = ({ item, index }: { item: Category; index: number }) => {
-    const renderLeftActions = () => (
-      <TouchableOpacity
-        onPress={() => handleEditCategory(index)}
-        style={{
-          width: screenWidth * 0.18,
-          height: displayCategoryHeight,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <View
-          className={`flex-row items-center justify-center h-full rounded-3xl border ${
-            theme === 'light' ? 'bg-blue-400 border-gray-300' : 'bg-blue-600 border-gray-600'
-          }`}
-          style={{ width: '100%', paddingHorizontal: 8 }}
-        >
-          <MaterialCommunityIcons name="pencil" size={24} color="#ffffff" />
-          <Text className="text-sm text-white ml-2">Edit</Text>
-        </View>
-      </TouchableOpacity>
-    );
-
-    const renderRightActions = () => (
-      <TouchableOpacity
-        onPress={() => handleDeleteCategory(index)}
-        style={{
-          width: screenWidth * 0.18,
-          height: displayCategoryHeight,
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <View
-          className={`flex-row items-center justify-center h-full rounded-3xl border ${
-            theme === 'light' ? 'bg-red-400 border-gray-300' : 'bg-red-600 border-gray-600'
-          }`}
-          style={{ width: '100%', paddingHorizontal: 8 }}
-        >
-          <MaterialCommunityIcons name="delete" size={24} color="#ffffff" />
-          <Text className="text-sm text-white ml-2">Delete</Text>
-        </View>
-      </TouchableOpacity>
-    );
-
-    return (
-      <View
-        style={{
-          width: displayCategoryWidth,
-          height: displayCategoryHeight,
-          marginVertical: 2.5,
-        }}
-      >
-        <Swipeable
-          ref={(ref) => {
-            if (ref) activeSwipeableRef.current = ref;
-          }}
-          friction={1}
-          leftThreshold={50}
-          rightThreshold={50}
-          renderLeftActions={renderLeftActions}
-          renderRightActions={renderRightActions}
-          onSwipeableOpen={() => {
-            activeSwipeableRef.current = activeSwipeableRef.current || null;
-          }}
-        >
-          <View
-            className={`flex-row items-center border rounded-3xl shadow elevation-8 ${
-              theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
-            }`}
-            style={{ width: displayCategoryWidth, height: displayCategoryHeight, paddingHorizontal: 16 }}
-          >
-            <FontAwesome6 name={item.icon} size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
-            <Text
-              className={`text-base ml-4 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}
-              numberOfLines={1}
-            >
-              {item.name}
-            </Text>
-          </View>
-        </Swipeable>
-      </View>
-    );
   };
 
   // Render icon in FlatList
@@ -225,12 +139,52 @@ export default function ConfCategories() {
 
   return (
     <View className={`flex-1 ${theme === 'light' ? 'bg-blue-100' : 'bg-gray-900'}`}>
-      {/* displayCategory List */}
+      {/* Back Button */}
+      <TouchableOpacity
+        onPress={() => router.push('/')}
+        style={{
+          position: 'absolute',
+          top: 16,
+          left: 16,
+        }}
+      >
+        <Ionicons name="arrow-back" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+      </TouchableOpacity>
+
+      {/* Header Element */}
+      <View
+        style={{
+          position: 'absolute',
+          top: 16,
+          left: (screenWidth - cardSize) / 2, // Center horizontally
+          width: cardSize,
+          height: cardSize,
+        }}
+      >
+        <View
+          className={`border rounded-3xl shadow elevation-8 items-center justify-center ${
+            theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
+          }`}
+          style={{ width: cardSize, height: cardSize }}
+        >
+          <MaterialIcons name="category" size={cardSize * 0.5} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+          <Text
+            className={`text-base text-center mt-2 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}
+            numberOfLines={2}
+          >
+            Todo Categories
+          </Text>
+        </View>
+      </View>
+
+      {/* Category List */}
       <FlatList
         data={categories}
-        renderItem={renderCategory}
+        renderItem={({ item, index }) => (
+          <CategoryListItem category={item} index={index} onEdit={handleEditCategory} onDelete={handleDeleteCategory} />
+        )}
         keyExtractor={(item, index) => `${item.name}-${index}`}
-        style={{ marginTop: 16, marginBottom: elementHeight + 32 }}
+        style={{ marginTop: 16 + cardSize + 16, marginBottom: addCategorySize + 32 }}
         contentContainerStyle={{ paddingHorizontal: 16 }}
       />
 
@@ -243,7 +197,7 @@ export default function ConfCategories() {
           setEditCategoryIndex(null);
           setCategoryName('');
           setSelectedIcon(null);
-          activeSwipeableRef.current?.close(); // Reset Swipeable
+          activeSwipeableRef.current?.close();
         }}
         style={{ justifyContent: 'center', alignItems: 'center', margin: 0 }}
       >
@@ -263,7 +217,6 @@ export default function ConfCategories() {
             placeholder="Enter category name"
             placeholderTextColor={theme === 'light' ? '#9CA3AF' : '#6B7280'}
           />
-
           <Text className={`text-lg font-bold mt-4 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
             {modalMode === 'add' ? 'Category Image' : 'Edit Category Image'}
           </Text>
@@ -277,8 +230,6 @@ export default function ConfCategories() {
             bounces={false}
             overScrollMode="never"
           />
-
-          {/* Modal Footer: Cancel and Create/Modify Buttons */}
           <View
             style={{
               flexDirection: 'row',
@@ -294,11 +245,11 @@ export default function ConfCategories() {
                 setEditCategoryIndex(null);
                 setCategoryName('');
                 setSelectedIcon(null);
-                activeSwipeableRef.current?.close(); // Reset Swipeable
+                activeSwipeableRef.current?.close();
               }}
               style={{
-                width: addCategoryWidth * 0.6,
-                height: elementHeight * 0.8,
+                width: screenWidth * 0.8 * 0.45,
+                height: screenHeight * 0.07,
               }}
             >
               <View
@@ -316,8 +267,8 @@ export default function ConfCategories() {
             <TouchableOpacity
               onPress={handleSaveCategory}
               style={{
-                width: addCategoryWidth * 0.6,
-                height: elementHeight * 0.8,
+                width: screenWidth * 0.8 * 0.45,
+                height: screenHeight * 0.07,
               }}
             >
               <View
@@ -336,80 +287,79 @@ export default function ConfCategories() {
         </View>
       </Modal>
 
-      {/* Bottom Row: Add Category, Backup, Restore */}
+      {/* Add Category Button */}
+      <TouchableOpacity
+        onPress={() => {
+          setModalMode('add');
+          setCategoryName('');
+          setSelectedIcon(null);
+          setModalVisible(true);
+        }}
+        style={{
+          position: 'absolute',
+          bottom: 16,
+          right: 16,
+        }}
+      >
+        <View
+          className={`rounded-full border shadow elevation-8 ${
+            theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
+          }`}
+          style={{
+            width: addCategorySize,
+            height: addCategorySize,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <MaterialCommunityIcons name="plus" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+        </View>
+      </TouchableOpacity>
+
+      {/* Backup and Restore Buttons */}
       <View
         style={{
           position: 'absolute',
           bottom: 16,
           left: 16,
-          right: 16,
           flexDirection: 'row',
-          justifyContent: 'space-between',
         }}
       >
-        {/* Add Category */}
+        {/* Backup Button */}
         <TouchableOpacity
-          onPress={() => {
-            setModalMode('add');
-            setCategoryName('');
-            setSelectedIcon(null);
-            setModalVisible(true);
-          }}
           style={{
-            width: addCategoryWidth,
-            height: elementHeight,
+            marginRight: 8, // 8px padding between buttons
           }}
         >
           <View
-            className={`flex items-center justify-center border rounded-3xl shadow elevation-8 ${
+            className={`rounded-full border shadow elevation-8 ${
               theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
             }`}
-            style={{ width: addCategoryWidth, height: elementHeight }}
-          >
-            <FontAwesome6 name="plus" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
-            <Text className={`text-sm mt-2 text-center ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
-              Add Category
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Backup */}
-        <TouchableOpacity
-          style={{
-            width: backupRestoreWidth,
-            height: elementHeight,
-          }}
-        >
-          <View
-            className={`flex items-center justify-center border rounded-3xl shadow elevation-8 ${
-              theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
-            }`}
-            style={{ width: backupRestoreWidth, height: elementHeight }}
+            style={{
+              width: addCategorySize,
+              height: addCategorySize,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
           >
             <MaterialIcons name="backup" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
-            <Text className={`text-sm text-center ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
-              Backup
-            </Text>
           </View>
         </TouchableOpacity>
 
-        {/* Restore */}
-        <TouchableOpacity
-          style={{
-            width: backupRestoreWidth,
-            height: elementHeight,
-          }}
-        >
+        {/* Restore Button */}
+        <TouchableOpacity>
           <View
-            className={`flex items-center justify-center border rounded-3xl shadow elevation-8 ${
+            className={`rounded-full border shadow elevation-8 ${
               theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
             }`}
-            style={{ width: backupRestoreWidth, height: elementHeight }}
+            style={{
+              width: addCategorySize,
+              height: addCategorySize,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
           >
             <MaterialIcons name="cloud-download" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
-            <Text className={`text-sm text-center ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
-              Restore
-            </Text>
           </View>
         </TouchableOpacity>
       </View>
