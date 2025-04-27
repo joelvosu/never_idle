@@ -118,6 +118,14 @@ export default function ConfCategories() {
     setModalVisible(true);
   };
 
+  // Handle swipeable will open
+  const handleSwipeableWillOpen = (swipeable: Swipeable) => {
+    if (activeSwipeableRef.current && activeSwipeableRef.current !== swipeable) {
+      activeSwipeableRef.current.close();
+    }
+    activeSwipeableRef.current = swipeable;
+  };
+
   // Render icon in FlatList
   const renderIcon = ({ item }: { item: string }) => (
     <TouchableOpacity
@@ -181,7 +189,13 @@ export default function ConfCategories() {
       <FlatList
         data={categories}
         renderItem={({ item, index }) => (
-          <CategoryListItem category={item} index={index} onEdit={handleEditCategory} onDelete={handleDeleteCategory} />
+          <CategoryListItem
+            category={item}
+            index={index}
+            onEdit={handleEditCategory}
+            onDelete={handleDeleteCategory}
+            onSwipeableWillOpen={handleSwipeableWillOpen}
+          />
         )}
         keyExtractor={(item, index) => `${item.name}-${index}`}
         style={{ marginTop: 16 + cardSize + 16, marginBottom: addCategorySize + 32 }}

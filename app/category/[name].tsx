@@ -1,5 +1,5 @@
 import { useContext, useState, useRef } from 'react';
-import { View, Dimensions, TouchableOpacity, FlatList, Text, TextInput } from 'react-native';
+import { View, Dimensions, TouchableOpacity, FlatList, Text, TextInput, ScrollView } from 'react-native';
 import { ThemeContext } from '@/contexts/ThemeContext';
 import { CategoryContext } from '@/contexts/CategoryContext';
 import { TodoContext } from '@/contexts/TodoContext';
@@ -17,6 +17,7 @@ export default function CategoryPage() {
   const { todos, refreshTodos } = useContext(TodoContext);
   const { name } = useLocalSearchParams<{ name: string }>();
   const screenWidth = Dimensions.get('window').width;
+  const screenHeight = Dimensions.get('window').height;
   const cardSize = screenWidth * 0.28; // Same as CategoryCard
   const inputCardHeight = screenWidth * 0.12 + 16; // cardHeight + 2 * marginVertical (8px)
   const [isEditModalVisible, setEditModalVisible] = useState(false);
@@ -26,6 +27,7 @@ export default function CategoryPage() {
   const [isCommentModalVisible, setCommentModalVisible] = useState(false);
   const [currentComment, setCurrentComment] = useState('');
   const [currentTodoName, setCurrentTodoName] = useState('');
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
   const activeSwipeableRef = useRef<Swipeable | null>(null);
 
   // Find the category by name
@@ -120,6 +122,25 @@ export default function CategoryPage() {
     setCommentModalVisible(true);
   };
 
+  const handleDeleteCompletedTodos = async () => {
+    const updatedTodos = todos.filter((todo) => !(todo.category === decodeURIComponent(name || '') && todo.completed));
+    try {
+      await AsyncStorage.setItem('todoItems', JSON.stringify(updatedTodos));
+      await refreshTodos();
+      setDeleteModalVisible(false);
+      activeSwipeableRef.current?.close();
+    } catch (error) {
+      console.error('Error deleting completed todos:', error);
+    }
+  };
+
+  const handleSwipeableWillOpen = (swipeable: Swipeable) => {
+    if (activeSwipeableRef.current && activeSwipeableRef.current !== swipeable) {
+      activeSwipeableRef.current.close();
+    }
+    activeSwipeableRef.current = swipeable;
+  };
+
   const renderTodo = ({
     item,
   }: {
@@ -135,6 +156,7 @@ export default function CategoryPage() {
         onEdit={handleEditTodo}
         onDelete={handleDeleteTodo}
         onViewComment={handleViewComment}
+        onSwipeableWillOpen={handleSwipeableWillOpen}
       />
     );
   };
@@ -200,6 +222,31 @@ export default function CategoryPage() {
           }}
         />
       </View>
+
+      {/* Trashcan Button */}
+      <TouchableOpacity
+        style={{
+          position: 'absolute',
+          bottom: 16,
+          right: 16,
+          width: screenWidth * 0.12,
+          height: screenWidth * 0.12,
+          borderRadius: (screenWidth * 0.12) / 2,
+          backgroundColor: theme === 'light' ? '#ffffff' : '#1F2937',
+          borderColor: theme === 'light' ? '#D1D5DB' : '#4B5563',
+          borderWidth: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.3,
+          shadowRadius: 4,
+          elevation: 8,
+        }}
+        onPress={() => setDeleteModalVisible(true)}
+      >
+        <MaterialCommunityIcons name="delete" size={24} color={theme === 'light' ? '#7F1D1D' : '#FECACA'} />
+      </TouchableOpacity>
 
       {/* Edit Modal */}
       <Modal
@@ -310,7 +357,12 @@ export default function CategoryPage() {
       >
         <View
           className={`rounded-2xl p-6 ${theme === 'light' ? 'bg-white' : 'bg-gray-800'}`}
-          style={{ width: screenWidth * 0.8, alignSelf: 'center' }}
+          style={{
+            width: screenWidth * 0.8,
+            minHeight: screenHeight * 0.2,
+            maxHeight: screenHeight * 0.8,
+            alignSelf: 'center',
+          }}
         >
           <Text
             className={`text-lg font-bold ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}
@@ -318,12 +370,16 @@ export default function CategoryPage() {
           >
             {currentTodoName || 'Unnamed'}
           </Text>
-          <Text
-            className={`text-base ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}
-            style={{ marginBottom: 16 }}
+          <ScrollView
+            style={{
+              marginBottom: 16,
+              maxHeight: screenHeight * 0.8 - 120, // Adjust for TodoName, Close button, padding
+            }}
           >
-            {currentComment || 'No comment'}
-          </Text>
+            <Text className={`text-base ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
+              {currentComment || 'No comment'}
+            </Text>
+          </ScrollView>
           <TouchableOpacity
             onPress={() => setCommentModalVisible(false)}
             style={{
@@ -342,6 +398,76 @@ export default function CategoryPage() {
               <Text className={`text-sm ml-2 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>Close</Text>
             </View>
           </TouchableOpacity>
+        </View>
+      </Modal>
+
+      {/* Delete Completed Todos Modal */}
+      <Modal
+        isVisible={isDeleteModalVisible}
+        onBackdropPress={() => {
+          setDeleteModalVisible(false);
+          activeSwipeableRef.current?.close();
+        }}
+        style={{ justifyContent: 'center', alignItems: 'center', margin: 0 }}
+      >
+        <View
+          className={`rounded-2xl p-6 ${theme === 'light' ? 'bg-white' : 'bg-gray-800'}`}
+          style={{ width: screenWidth * 0.8, alignSelf: 'center' }}
+        >
+          <Text
+            className={`text-lg font-bold ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}
+            style={{ marginBottom: 16 }}
+          >
+            Delete all completed todos in {decodeURIComponent(name || '')}?
+          </Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              marginTop: 16,
+            }}
+          >
+            {/* Cancel Button */}
+            <TouchableOpacity
+              onPress={() => {
+                setDeleteModalVisible(false);
+                activeSwipeableRef.current?.close();
+              }}
+              style={{
+                width: screenWidth * 0.8 * 0.45,
+                height: screenWidth * 0.12,
+              }}
+            >
+              <View
+                className={`flex-row items-center justify-center border rounded-3xl shadow elevation-8 ${
+                  theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
+                }`}
+                style={{ width: '100%', height: '100%', paddingHorizontal: 16 }}
+              >
+                <MaterialCommunityIcons name="cancel" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+                <Text className={`text-sm ml-2 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>Cancel</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Delete Button */}
+            <TouchableOpacity
+              onPress={handleDeleteCompletedTodos}
+              style={{
+                width: screenWidth * 0.8 * 0.45,
+                height: screenWidth * 0.12,
+              }}
+            >
+              <View
+                className={`flex-row items-center justify-center border rounded-3xl shadow elevation-8 ${
+                  theme === 'light' ? 'bg-red-200 border-gray-300' : 'bg-red-900 border-gray-600'
+                }`}
+                style={{ width: '100%', height: '100%', paddingHorizontal: 16 }}
+              >
+                <MaterialCommunityIcons name="delete" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+                <Text className={`text-sm ml-2 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>Delete</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
     </View>

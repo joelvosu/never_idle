@@ -12,6 +12,7 @@ interface TodoCardProps {
   onEdit?: (id: string, name: string, swipeable: Swipeable | null) => void;
   onDelete?: (id: string) => void;
   onViewComment?: (comment: string, name: string) => void;
+  onSwipeableWillOpen?: (swipeable: Swipeable) => void;
 }
 
 export default function TodoCard({
@@ -22,6 +23,7 @@ export default function TodoCard({
   onEdit,
   onDelete,
   onViewComment,
+  onSwipeableWillOpen,
 }: TodoCardProps) {
   const { theme } = useContext(ThemeContext);
   const screenWidth = Dimensions.get('window').width;
@@ -52,7 +54,7 @@ export default function TodoCard({
         className={`flex-row items-center justify-center h-full rounded-3xl border ${
           theme === 'light' ? 'bg-blue-400 border-gray-300' : 'bg-blue-600 border-gray-600'
         }`}
-        style={{ width: '100%', paddingHorizontal: 8 }}
+        style={{ width: '100%', paddingHorizontal: 8, borderWidth: 1 }}
       >
         <MaterialCommunityIcons name="pencil" size={24} color="#ffffff" />
         <Text className="text-sm text-white ml-2">Edit</Text>
@@ -74,7 +76,7 @@ export default function TodoCard({
         className={`flex-row items-center justify-center h-full rounded-3xl border ${
           theme === 'light' ? 'bg-red-400 border-gray-300' : 'bg-red-600 border-gray-600'
         }`}
-        style={{ width: '100%', paddingHorizontal: 8 }}
+        style={{ width: '100%', paddingHorizontal: 8, borderWidth: 1 }}
       >
         <MaterialCommunityIcons name="delete" size={24} color="#ffffff" />
         <Text className="text-sm text-white ml-2">Delete</Text>
@@ -88,7 +90,7 @@ export default function TodoCard({
         style={{
           width: cardWidth,
           height: cardHeight,
-          marginVertical: 8, // 16px total spacing (8px top + 8px bottom)
+          marginVertical: 8, // 16px total spacing
           alignSelf: 'center',
         }}
       >
@@ -140,7 +142,7 @@ export default function TodoCard({
       style={{
         width: cardWidth,
         height: cardHeight,
-        marginVertical: 4, // 8px total spacing (4px top + 4px bottom)
+        marginVertical: 4, // 8px total spacing
         alignSelf: 'center',
       }}
     >
@@ -151,8 +153,10 @@ export default function TodoCard({
         rightThreshold={50}
         renderLeftActions={renderLeftActions}
         renderRightActions={renderRightActions}
-        onSwipeableOpen={() => {
-          swipeableRef.current = swipeableRef.current || null;
+        onSwipeableWillOpen={() => {
+          if (onSwipeableWillOpen && swipeableRef.current) {
+            onSwipeableWillOpen(swipeableRef.current);
+          }
         }}
       >
         <View

@@ -1,6 +1,7 @@
 import { useContext, useRef } from 'react';
 import { View, Dimensions, Text, TouchableOpacity } from 'react-native';
 import { ThemeContext } from '@/contexts/ThemeContext';
+import { TodoContext } from '@/contexts/TodoContext';
 import { FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
 
@@ -9,15 +10,40 @@ interface CategoryListItemProps {
   index: number;
   onEdit: (index: number, swipeable: Swipeable | null) => void;
   onDelete: (index: number) => void;
+  onSwipeableWillOpen?: (swipeable: Swipeable) => void;
 }
 
-export default function CategoryListItem({ category, index, onEdit, onDelete }: CategoryListItemProps) {
+export default function CategoryListItem({
+  category,
+  index,
+  onEdit,
+  onDelete,
+  onSwipeableWillOpen,
+}: CategoryListItemProps) {
   const { theme } = useContext(ThemeContext);
+  const { todos } = useContext(TodoContext);
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   const displayCategoryWidth = screenWidth * 0.9; // 90% width
   const displayCategoryHeight = screenHeight * 0.07; // 7% height
   const swipeableRef = useRef<Swipeable | null>(null);
+
+  // Count uncompleted and completed todos for this category
+  const uncompletedCount = todos.filter((todo) => todo.category === category.name && !todo.completed).length;
+  const completedCount = todos.filter((todo) => todo.category === category.name && todo.completed).length;
+
+  // Calculate circle size: 35% height at count=1, 65% at count=10
+  const getCircleSize = (count: number) => {
+    if (count === 0) return 0;
+    const minSize = displayCategoryHeight * 0.35; // 35% for count=1
+    const maxSize = displayCategoryHeight * 0.65; // 65% for count>=10
+    if (count >= 10) return maxSize;
+    // Linear interpolation: size = minSize + (maxSize - minSize) * (count - 1) / (10 - 1)
+    return minSize + ((maxSize - minSize) * (count - 1)) / 9;
+  };
+
+  const uncompletedCircleSize = getCircleSize(uncompletedCount);
+  const completedCircleSize = getCircleSize(completedCount);
 
   const renderLeftActions = () => (
     <TouchableOpacity
@@ -79,8 +105,10 @@ export default function CategoryListItem({ category, index, onEdit, onDelete }: 
         rightThreshold={50}
         renderLeftActions={renderLeftActions}
         renderRightActions={renderRightActions}
-        onSwipeableOpen={() => {
-          swipeableRef.current = swipeableRef.current || null;
+        onSwipeableWillOpen={() => {
+          if (onSwipeableWillOpen && swipeableRef.current) {
+            onSwipeableWillOpen(swipeableRef.current);
+          }
         }}
       >
         <View
@@ -90,9 +118,46 @@ export default function CategoryListItem({ category, index, onEdit, onDelete }: 
           style={{ width: displayCategoryWidth, height: displayCategoryHeight, paddingHorizontal: 16 }}
         >
           <FontAwesome6 name={category.icon} size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
-          <Text className={`text-base ml-4 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`} numberOfLines={1}>
+          <Text
+            className={`text-base ml-4 flex-1 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}
+            numberOfLines={1}
+          >
             {category.name}
           </Text>
+          <View className="flex-row items-center">
+            {uncompletedCount > 0 && (
+              <View
+                className={`rounded-full border justify-center items-center ${
+                  theme === 'light' ? 'bg-red-200 border-gray-300' : 'bg-red-900 border-gray-600'
+                }`}
+                style={{
+                  width: uncompletedCircleSize,
+                  height: uncompletedCircleSize,
+                  marginLeft: 8,
+                }}
+              >
+                <Text className={`text-sm font-bold ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
+                  {uncompletedCount}
+                </Text>
+              </View>
+            )}
+            {completedCount > 0 && (
+              <View
+                className={`rounded-full border justify-center items-center ${
+                  theme === 'light' ? 'bg-gray-200 border-gray-300' : 'bg-gray-800 border-gray-600'
+                }`}
+                style={{
+                  width: completedCircleSize,
+                  height: completedCircleSize,
+                  marginLeft: 8,
+                }}
+              >
+                <Text className={`text-sm font-bold ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
+                  {completedCount}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
       </Swipeable>
     </View>
