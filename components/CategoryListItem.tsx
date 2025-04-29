@@ -25,7 +25,7 @@ export default function CategoryListItem({
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   const displayCategoryWidth = screenWidth * 0.9; // 90% width
-  const displayCategoryHeight = screenHeight * 0.07; // 7% height
+  const displayCategoryHeight = screenHeight * 0.06; // 7% height
   const swipeableRef = useRef<Swipeable | null>(null);
 
   // Count uncompleted and completed todos for this category
@@ -56,7 +56,7 @@ export default function CategoryListItem({
       }}
     >
       <View
-        className={`flex-row items-center justify-center h-full rounded-3xl border ${
+        className={`flex-row items-center justify-center h-full rounded-2xl border ${
           theme === 'light' ? 'bg-blue-400 border-gray-300' : 'bg-blue-600 border-gray-600'
         }`}
         style={{ width: '100%', paddingHorizontal: 8 }}
@@ -78,7 +78,7 @@ export default function CategoryListItem({
       }}
     >
       <View
-        className={`flex-row items-center justify-center h-full rounded-3xl border ${
+        className={`flex-row items-center justify-center h-full rounded-2xl border ${
           theme === 'light' ? 'bg-red-400 border-gray-300' : 'bg-red-600 border-gray-600'
         }`}
         style={{ width: '100%', paddingHorizontal: 8 }}
@@ -94,7 +94,7 @@ export default function CategoryListItem({
       style={{
         width: displayCategoryWidth,
         height: displayCategoryHeight,
-        marginVertical: 2.5, // 5px between items
+        marginVertical: 1, // 5px between items
         alignSelf: 'center',
       }}
     >
@@ -112,7 +112,7 @@ export default function CategoryListItem({
         }}
       >
         <View
-          className={`flex-row items-center border rounded-3xl shadow elevation-8 ${
+          className={`flex-row items-center border rounded-2xl shadow elevation-8 ${
             theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
           }`}
           style={{ width: displayCategoryWidth, height: displayCategoryHeight, paddingHorizontal: 16 }}

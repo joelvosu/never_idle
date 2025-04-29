@@ -28,7 +28,7 @@ export default function TodoCard({
   const { theme } = useContext(ThemeContext);
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = screenWidth * 0.9; // 90% of screen width
-  const cardHeight = screenWidth * 0.12; // Reduced height
+  const cardHeight = screenWidth * 0.1; // Reduced height
   const [inputText, setInputText] = useState('');
   const swipeableRef = useRef<Swipeable | null>(null);
 
@@ -51,7 +51,7 @@ export default function TodoCard({
       }}
     >
       <View
-        className={`flex-row items-center justify-center h-full rounded-3xl border ${
+        className={`flex-row items-center justify-center h-full rounded-2xl border ${
           theme === 'light' ? 'bg-blue-400 border-gray-300' : 'bg-blue-600 border-gray-600'
         }`}
         style={{ width: '100%', paddingHorizontal: 8, borderWidth: 1 }}
@@ -73,7 +73,7 @@ export default function TodoCard({
       }}
     >
       <View
-        className={`flex-row items-center justify-center h-full rounded-3xl border ${
+        className={`flex-row items-center justify-center h-full rounded-2xl border ${
           theme === 'light' ? 'bg-red-400 border-gray-300' : 'bg-red-600 border-gray-600'
         }`}
         style={{ width: '100%', paddingHorizontal: 8, borderWidth: 1 }}
@@ -90,12 +90,12 @@ export default function TodoCard({
         style={{
           width: cardWidth,
           height: cardHeight,
-          marginVertical: 8, // 16px total spacing
+          marginVertical: 4, // 16px total spacing
           alignSelf: 'center',
         }}
       >
         <View
-          className={`flex-row items-center border rounded-3xl shadow elevation-8 ${
+          className={`flex-row items-center border rounded-2xl shadow elevation-8 ${
             theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
           }`}
           style={{ width: cardWidth, height: cardHeight, paddingHorizontal: 16 }}
@@ -142,7 +142,7 @@ export default function TodoCard({
       style={{
         width: cardWidth,
         height: cardHeight,
-        marginVertical: 4, // 8px total spacing
+        marginVertical: 1, // 8px total spacing
         alignSelf: 'center',
       }}
     >
@@ -160,10 +160,10 @@ export default function TodoCard({
         }}
       >
         <View
-          className={`flex-row items-center border rounded-3xl shadow elevation-8 ${
+          className={`flex-row items-center border rounded-2xl shadow elevation-8 ${
             theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
           }`}
-          style={{ width: cardWidth, height: cardHeight, paddingHorizontal: 16 }}
+          style={{ width: cardWidth, height: cardHeight, paddingHorizontal: 8 }}
         >
           <TouchableOpacity onPress={() => onToggleComplete && onToggleComplete(todo.id)} style={{ marginRight: 12 }}>
             <MaterialCommunityIcons

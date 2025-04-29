@@ -19,7 +19,7 @@ export default function CategoryPage() {
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   const cardSize = screenWidth * 0.28; // Same as CategoryCard
-  const inputCardHeight = screenWidth * 0.12 + 16; // cardHeight + 2 * marginVertical (8px)
+  const inputCardHeight = screenWidth * 0.1 + 6; // cardHeight + 2 * marginVertical (8px)
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [editTodoId, setEditTodoId] = useState<string | null>(null);
   const [editTodoName, setEditTodoName] = useState('');
@@ -147,7 +147,7 @@ export default function CategoryPage() {
     item: { id: string; name: string; completed: boolean; isSpacer?: boolean; comment: string };
   }) => {
     if (item.isSpacer) {
-      return <View style={{ height: 16 }} />; // 16px gap between groups
+      return <View style={{ height: 8 }} />; // 16px gap between groups
     }
     return (
       <TodoCard
@@ -206,7 +206,7 @@ export default function CategoryPage() {
       <View
         style={{
           position: 'absolute',
-          top: 16 + cardSize + 16 + inputCardHeight + 16, // Below input card with 16px spacing
+          top: 8 + cardSize + 16 + inputCardHeight + 16, // Below input card with 16px spacing
           left: 0,
           right: 0,
           bottom: 0,
