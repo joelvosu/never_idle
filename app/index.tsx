@@ -22,6 +22,7 @@ export default function Home() {
       <ThemeToggle
         style={{
           position: 'absolute',
+          top: 16,
           left: 20, // px-5
         }}
       />
@@ -70,10 +71,14 @@ export default function Home() {
         }}
       >
         <FlatList
-          data={
-            categories.length > 0 ? categories : [{ name: '', icon: '' }] // Placeholder for "plus" card
+          data={categories.length > 0 ? categories : [{ name: 'Add Category', icon: 'plus' }]}
+          renderItem={({ item }) =>
+            item.name === 'Add Category' ? (
+              <CategoryCard category={{ name: '', icon: 'plus' }} />
+            ) : (
+              renderCategory({ item })
+            )
           }
-          renderItem={({ item }) => (item.name ? renderCategory({ item }) : <CategoryCard />)}
           keyExtractor={(item, index) => (item.name ? `${item.name}-${index}` : 'plus')}
           numColumns={3}
           contentContainerStyle={{

@@ -10,6 +10,7 @@ import { fontAwesomeIcons } from '@/data/fontAwesomeIcons';
 import { router } from 'expo-router';
 import CategoryListItem from '@/components/CategoryListItem';
 import { Swipeable } from 'react-native-gesture-handler';
+import { BackupButton, RestoreButton } from '@/components/BackupRestore';
 
 interface Category {
   name: string;
@@ -340,42 +341,10 @@ export default function ConfCategories() {
         }}
       >
         {/* Backup Button */}
-        <TouchableOpacity
-          style={{
-            marginRight: 8, // 8px padding between buttons
-          }}
-        >
-          <View
-            className={`rounded-full border shadow elevation-8 ${
-              theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
-            }`}
-            style={{
-              width: addCategorySize,
-              height: addCategorySize,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <MaterialIcons name="backup" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
-          </View>
-        </TouchableOpacity>
+        <BackupButton size={addCategorySize} style={{ marginRight: 8 }} />
 
         {/* Restore Button */}
-        <TouchableOpacity>
-          <View
-            className={`rounded-full border shadow elevation-8 ${
-              theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
-            }`}
-            style={{
-              width: addCategorySize,
-              height: addCategorySize,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <MaterialIcons name="cloud-download" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
-          </View>
-        </TouchableOpacity>
+        <RestoreButton size={addCategorySize} />
       </View>
     </View>
   );

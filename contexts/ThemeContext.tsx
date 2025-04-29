@@ -6,11 +6,13 @@ type Theme = 'light' | 'dark';
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
+  setTheme: (theme: Theme) => void;
 }
 
 export const ThemeContext = createContext<ThemeContextType>({
   theme: 'light',
   toggleTheme: () => {},
+  setTheme: () => {},
 });
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
@@ -38,5 +40,5 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     AsyncStorage.setItem('theme', newTheme).catch((error) => console.error('Failed to save theme:', error));
   };
 
-  return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
+  return <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>{children}</ThemeContext.Provider>;
 };
