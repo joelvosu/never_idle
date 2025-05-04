@@ -13,6 +13,10 @@
     },
     "production": {
       "autoIncrement": true,
+      "android": {
+        "serviceAccountKeyPath": "./neveridleplay-e9079ed434c3.json",
+        "track": "internal"
+      }
     }
   },
   "submit": {
