@@ -23,23 +23,17 @@ export default function ConfCategories() {
   const { todos, updateCategoryInTodos } = useContext(TodoContext);
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
-  const cardSize = screenWidth * 0.28; // Same as CategoryCard
-  const addCategorySize = screenWidth * 0.12; // Matches round "+" button
+  const cardSize = screenWidth * 0.29;
+  const addCategorySize = screenWidth * 0.12;
 
-  // Modal state
   const [isModalVisible, setModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
   const [editCategoryIndex, setEditCategoryIndex] = useState<number | null>(null);
   const [categoryName, setCategoryName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
-
-  // Categories state
   const [categories, setCategories] = useState<Category[]>([]);
-
-  // Swipeable ref
   const activeSwipeableRef = useRef<Swipeable | null>(null);
 
-  // Load categories from AsyncStorage
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -54,7 +48,6 @@ export default function ConfCategories() {
     loadCategories();
   }, []);
 
-  // Save category to AsyncStorage
   const handleSaveCategory = async () => {
     if (!categoryName.trim() || !selectedIcon) {
       Alert.alert('Error', 'Please enter a category name and select an icon');
@@ -69,26 +62,24 @@ export default function ConfCategories() {
       if (editCategoryIndex !== null) {
         const oldCategoryName = categories[editCategoryIndex].name;
         updatedCategories[editCategoryIndex] = newCategory;
-        // Update todos with new category name
         await updateCategoryInTodos(oldCategoryName, newCategory.name);
       }
     }
     try {
       await AsyncStorage.setItem('categories', JSON.stringify(updatedCategories));
       setCategories(updatedCategories);
-      await refreshCategories(); // Notify home screen
+      await refreshCategories();
       setCategoryName('');
       setSelectedIcon(null);
       setModalVisible(false);
       setModalMode('add');
       setEditCategoryIndex(null);
-      activeSwipeableRef.current?.close(); // Reset Swipeable
+      activeSwipeableRef.current?.close();
     } catch (error) {
       console.error('Error saving categories:', error);
     }
   };
 
-  // Delete category
   const handleDeleteCategory = async (index: number) => {
     const categoryName = categories[index].name;
     const hasTodos = todos.some((todo) => todo.category === categoryName);
@@ -101,14 +92,13 @@ export default function ConfCategories() {
     try {
       await AsyncStorage.setItem('categories', JSON.stringify(updatedCategories));
       setCategories(updatedCategories);
-      await refreshCategories(); // Notify home screen
-      activeSwipeableRef.current?.close(); // Reset Swipeable
+      await refreshCategories();
+      activeSwipeableRef.current?.close();
     } catch (error) {
       console.error('Error deleting category:', error);
     }
   };
 
-  // Open Edit modal
   const handleEditCategory = (index: number, swipeable: Swipeable | null) => {
     activeSwipeableRef.current = swipeable;
     const category = categories[index];
@@ -119,7 +109,6 @@ export default function ConfCategories() {
     setModalVisible(true);
   };
 
-  // Handle swipeable will open
   const handleSwipeableWillOpen = (swipeable: Swipeable) => {
     if (activeSwipeableRef.current && activeSwipeableRef.current !== swipeable) {
       activeSwipeableRef.current.close();
@@ -127,7 +116,6 @@ export default function ConfCategories() {
     activeSwipeableRef.current = swipeable;
   };
 
-  // Render icon in FlatList
   const renderIcon = ({ item }: { item: string }) => (
     <TouchableOpacity
       onPress={() => setSelectedIcon(item)}
@@ -165,7 +153,7 @@ export default function ConfCategories() {
         style={{
           position: 'absolute',
           top: 16,
-          left: (screenWidth - cardSize) / 2, // Center horizontally
+          left: (screenWidth - cardSize) / 2,
           width: cardSize,
           height: cardSize,
         }}
@@ -187,21 +175,39 @@ export default function ConfCategories() {
       </View>
 
       {/* Category List */}
-      <FlatList
-        data={categories}
-        renderItem={({ item, index }) => (
-          <CategoryListItem
-            category={item}
-            index={index}
-            onEdit={handleEditCategory}
-            onDelete={handleDeleteCategory}
-            onSwipeableWillOpen={handleSwipeableWillOpen}
-          />
+      <View
+        style={{
+          marginTop: 16 + cardSize + 16,
+          marginBottom: addCategorySize + 32,
+          flex: 1,
+        }}
+      >
+        {categories.length > 0 && (
+          <View
+            className={`border rounded-2xl shadow elevation-8 ${
+              theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
+            }`}
+            style={{ width: screenWidth * 0.9, alignSelf: 'center' }}
+          >
+            <FlatList
+              data={categories}
+              renderItem={({ item, index }) => (
+                <CategoryListItem
+                  category={item}
+                  index={index}
+                  onEdit={handleEditCategory}
+                  onDelete={handleDeleteCategory}
+                  onSwipeableWillOpen={handleSwipeableWillOpen}
+                  showSeparator={index < categories.length - 1}
+                />
+              )}
+              keyExtractor={(item, index) => `${item.name}-${index}`}
+              scrollEnabled={false}
+              contentContainerStyle={{ padding: 4 }}
+            />
+          </View>
         )}
-        keyExtractor={(item, index) => `${item.name}-${index}`}
-        style={{ marginTop: 16 + cardSize + 16, marginBottom: addCategorySize + 32 }}
-        contentContainerStyle={{ paddingHorizontal: 16 }}
-      />
+      </View>
 
       {/* Modal for Add/Edit Category */}
       <Modal
@@ -252,7 +258,6 @@ export default function ConfCategories() {
               marginTop: 16,
             }}
           >
-            {/* Cancel Button */}
             <TouchableOpacity
               onPress={() => {
                 setModalVisible(false);
@@ -277,8 +282,6 @@ export default function ConfCategories() {
                 <Text className={`text-sm ml-2 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>Cancel</Text>
               </View>
             </TouchableOpacity>
-
-            {/* Create/Modify Category Button */}
             <TouchableOpacity
               onPress={handleSaveCategory}
               style={{
@@ -340,10 +343,7 @@ export default function ConfCategories() {
           flexDirection: 'row',
         }}
       >
-        {/* Backup Button */}
         <BackupButton size={addCategorySize} style={{ marginRight: 8 }} />
-
-        {/* Restore Button */}
         <RestoreButton size={addCategorySize} />
       </View>
     </View>

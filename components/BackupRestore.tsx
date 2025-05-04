@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { TouchableOpacity, View, Alert, Text, Modal, Dimensions, StyleProp, ViewStyle } from 'react-native';
+import { TouchableOpacity, View, Alert, Text, Dimensions, StyleProp, ViewStyle } from 'react-native';
 import { ThemeContext } from '@/contexts/ThemeContext';
 import { CategoryContext } from '@/contexts/CategoryContext';
 import { TodoContext } from '@/contexts/TodoContext';
@@ -8,7 +8,7 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { ModalProps } from 'react-native-modal';
+import Modal from 'react-native-modal';
 
 interface BackupData {
   timestamp: string;
@@ -199,7 +199,7 @@ export function RestoreButton({ size, style }: BackupRestoreProps) {
 
       {/* Restore Confirmation Modal */}
       <Modal
-        visible={isModalVisible}
+        isVisible={isModalVisible}
         onBackButtonPress={cancelRestore}
         style={{ justifyContent: 'center', alignItems: 'center', margin: 0 }}
       >

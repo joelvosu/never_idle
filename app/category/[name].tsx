@@ -18,7 +18,7 @@ export default function CategoryPage() {
   const { name } = useLocalSearchParams<{ name: string }>();
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
-  const cardSize = screenWidth * 0.28; // Same as CategoryCard
+  const cardSize = screenWidth * 0.29; // Same as CategoryCard
   const inputCardHeight = screenWidth * 0.1 + 8; // cardHeight + 2 * marginVertical (4px)
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [editTodoId, setEditTodoId] = useState<string | null>(null);

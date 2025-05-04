@@ -11,6 +11,7 @@ interface CategoryListItemProps {
   onEdit: (index: number, swipeable: Swipeable | null) => void;
   onDelete: (index: number) => void;
   onSwipeableWillOpen?: (swipeable: Swipeable) => void;
+  showSeparator?: boolean;
 }
 
 export default function CategoryListItem({
@@ -19,26 +20,24 @@ export default function CategoryListItem({
   onEdit,
   onDelete,
   onSwipeableWillOpen,
+  showSeparator = false,
 }: CategoryListItemProps) {
   const { theme } = useContext(ThemeContext);
   const { todos } = useContext(TodoContext);
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
-  const displayCategoryWidth = screenWidth * 0.9; // 90% width
-  const displayCategoryHeight = screenHeight * 0.06; // 7% height
+  const displayCategoryWidth = screenWidth * 0.9 - 8; // Match TodoCard
+  const displayCategoryHeight = screenWidth * 0.1;
   const swipeableRef = useRef<Swipeable | null>(null);
 
-  // Count uncompleted and completed todos for this category
   const uncompletedCount = todos.filter((todo) => todo.category === category.name && !todo.completed).length;
   const completedCount = todos.filter((todo) => todo.category === category.name && todo.completed).length;
 
-  // Calculate circle size: 35% height at count=1, 65% at count=10
   const getCircleSize = (count: number) => {
     if (count === 0) return 0;
-    const minSize = displayCategoryHeight * 0.35; // 35% for count=1
-    const maxSize = displayCategoryHeight * 0.65; // 65% for count>=10
+    const minSize = displayCategoryHeight * 0.45;
+    const maxSize = displayCategoryHeight * 0.75;
     if (count >= 10) return maxSize;
-    // Linear interpolation: size = minSize + (maxSize - minSize) * (count - 1) / (10 - 1)
     return minSize + ((maxSize - minSize) * (count - 1)) / 9;
   };
 
@@ -90,14 +89,7 @@ export default function CategoryListItem({
   );
 
   return (
-    <View
-      style={{
-        width: displayCategoryWidth,
-        height: displayCategoryHeight,
-        marginVertical: 1, // 5px between items
-        alignSelf: 'center',
-      }}
-    >
+    <View style={{ width: displayCategoryWidth, alignSelf: 'center' }}>
       <Swipeable
         ref={swipeableRef}
         friction={1}
@@ -112,7 +104,7 @@ export default function CategoryListItem({
         }}
       >
         <View
-          className={`flex-row items-center border rounded-2xl shadow elevation-8 ${
+          className={`flex-row items-center rounded-2xl shadow elevation-8 ${
             theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
           }`}
           style={{ width: displayCategoryWidth, height: displayCategoryHeight, paddingHorizontal: 16 }}
@@ -160,6 +152,17 @@ export default function CategoryListItem({
           </View>
         </View>
       </Swipeable>
+      {showSeparator && (
+        <View
+          style={{
+            width: displayCategoryWidth * 0.95,
+            height: 1,
+            backgroundColor: theme === 'light' ? '#D1D5DB' : '#4B5563',
+            alignSelf: 'center',
+            marginVertical: 4,
+          }}
+        />
+      )}
     </View>
   );
 }
