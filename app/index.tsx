@@ -14,8 +14,12 @@ export default function Home() {
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   const quoteCardHeight = screenHeight * 0.15; // 15% of screen height
+  const containerWidth = screenWidth * 0.9; // 90% of screen width for CategoryCards
+  const marginHorizontal = screenWidth * 0.05; // 5% margin on each side
 
   const renderCategory = ({ item }: { item: { name: string; icon: string } }) => <CategoryCard category={item} />;
+
+  const RowSeparator = () => <View style={{ height: screenWidth * 0.015 }} />; // 1.5% of screen width
 
   return (
     <View className={`flex-1 ${theme === 'light' ? 'bg-blue-100' : 'bg-gray-900'}`}>
@@ -23,7 +27,7 @@ export default function Home() {
         style={{
           position: 'absolute',
           top: 16,
-          left: 20, // px-5
+          left: 20,
         }}
       />
       <View className="absolute top-4 box-border" style={{ width: screenWidth, height: 44 }}>
@@ -43,7 +47,7 @@ export default function Home() {
           asChild
           style={{
             position: 'absolute',
-            right: 20, // px-5
+            right: 20,
             bottom: 4,
           }}
         >
@@ -64,27 +68,26 @@ export default function Home() {
       <View
         style={{
           position: 'absolute',
-          top: 64 + quoteCardHeight + 30, // 30px spacing
-          left: 0,
-          right: 0,
+          top: 64 + quoteCardHeight + 30,
+          left: marginHorizontal,
+          width: containerWidth,
           bottom: 0,
         }}
       >
         <FlatList
-          data={categories.length > 0 ? categories : [{ name: 'Add Category', icon: 'plus' }]}
+          data={categories.length > 0 ? categories : [{ name: '', icon: 'plus' }]}
           renderItem={({ item }) =>
-            item.name === 'Add Category' ? (
-              <CategoryCard category={{ name: '', icon: 'plus' }} />
-            ) : (
-              renderCategory({ item })
-            )
+            item.name ? renderCategory({ item }) : <CategoryCard category={{ name: '', icon: 'plus' }} />
           }
           keyExtractor={(item, index) => (item.name ? `${item.name}-${index}` : 'plus')}
           numColumns={3}
           contentContainerStyle={{
-            paddingHorizontal: screenWidth * 0.02,
             paddingBottom: 16,
           }}
+          columnWrapperStyle={{
+            justifyContent: 'space-between',
+          }}
+          ItemSeparatorComponent={RowSeparator}
         />
       </View>
     </View>
