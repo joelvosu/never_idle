@@ -19,7 +19,7 @@ export default function CategoryPage() {
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
   const cardSize = screenWidth * 0.28; // Same as CategoryCard
-  const inputCardHeight = screenWidth * 0.1 + 6; // cardHeight + 2 * marginVertical (8px)
+  const inputCardHeight = screenWidth * 0.1 + 8; // cardHeight + 2 * marginVertical (4px)
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [editTodoId, setEditTodoId] = useState<string | null>(null);
   const [editTodoName, setEditTodoName] = useState('');
@@ -36,13 +36,6 @@ export default function CategoryPage() {
   // Split todos into uncompleted and completed
   const uncompletedTodos = todos.filter((todo) => todo.category === decodeURIComponent(name || '') && !todo.completed);
   const completedTodos = todos.filter((todo) => todo.category === decodeURIComponent(name || '') && todo.completed);
-
-  // Combine data for FlatList: uncompleted, spacer, completed
-  const listData = [
-    ...uncompletedTodos,
-    ...(completedTodos.length > 0 ? [{ id: 'spacer', name: '', completed: false, isSpacer: true, comment: '' }] : []),
-    ...completedTodos,
-  ];
 
   const handleSaveTodo = async (todoName: string) => {
     if (!category) {
@@ -143,12 +136,13 @@ export default function CategoryPage() {
 
   const renderTodo = ({
     item,
+    index,
+    data,
   }: {
-    item: { id: string; name: string; completed: boolean; isSpacer?: boolean; comment: string };
+    item: { id: string; name: string; completed: boolean; comment: string };
+    index: number;
+    data: { id: string; name: string; completed: boolean; comment: string }[];
   }) => {
-    if (item.isSpacer) {
-      return <View style={{ height: 8 }} />; // 16px gap between groups
-    }
     return (
       <TodoCard
         todo={item}
@@ -157,6 +151,7 @@ export default function CategoryPage() {
         onDelete={handleDeleteTodo}
         onViewComment={handleViewComment}
         onSwipeableWillOpen={handleSwipeableWillOpen}
+        showSeparator={index < data.length - 1}
       />
     );
   };
@@ -180,7 +175,7 @@ export default function CategoryPage() {
         style={{
           position: 'absolute',
           top: 16,
-          left: (screenWidth - cardSize) / 2, // Center horizontally
+          left: (screenWidth - cardSize) / 2,
           width: cardSize,
           height: cardSize,
         }}
@@ -192,35 +187,63 @@ export default function CategoryPage() {
       <View
         style={{
           position: 'absolute',
-          top: 16 + cardSize + 16, // Below CategoryCard with 16px spacing
+          top: 16 + cardSize + 16,
           left: 0,
           right: 0,
-          zIndex: 10, // Ensure it stays above FlatList
+          zIndex: 10,
           paddingHorizontal: 16,
         }}
       >
         <TodoCard isInputCard onSave={handleSaveTodo} />
       </View>
 
-      {/* Todo List */}
+      {/* Todo Lists */}
       <View
         style={{
           position: 'absolute',
-          top: 8 + cardSize + 16 + inputCardHeight + 16, // Below input card with 16px spacing
+          top: 8 + cardSize + 16 + inputCardHeight + 16,
           left: 0,
           right: 0,
-          bottom: 0,
+          bottom: 16,
         }}
       >
-        <FlatList
-          data={listData}
-          renderItem={renderTodo}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{
-            paddingBottom: 16,
-            paddingHorizontal: 16,
-          }}
-        />
+        <ScrollView contentContainerStyle={{ paddingBottom: 16, paddingHorizontal: 16 }}>
+          {/* Uncompleted Todos Group */}
+          {uncompletedTodos.length > 0 && (
+            <View
+              className={`border rounded-2xl shadow elevation-8 mb-4 ${
+                theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
+              }`}
+              style={{ width: screenWidth * 0.9, alignSelf: 'center' }}
+            >
+              <FlatList
+                data={uncompletedTodos}
+                renderItem={({ item, index }) => renderTodo({ item, index, data: uncompletedTodos })}
+                keyExtractor={(item) => item.id}
+                scrollEnabled={false}
+                contentContainerStyle={{ padding: 4 }}
+              />
+            </View>
+          )}
+
+          {/* Completed Todos Group */}
+          {completedTodos.length > 0 && (
+            <View
+              className={`border rounded-2xl shadow elevation-8 ${
+                theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
+              }`}
+              style={{ width: screenWidth * 0.9, alignSelf: 'center' }}
+            >
+              <FlatList
+                data={completedTodos}
+                renderItem={({ item, index }) => renderTodo({ item, index, data: completedTodos })}
+                keyExtractor={(item) => item.id}
+                scrollEnabled={false}
+                contentContainerStyle={{ padding: 4 }}
+              />
+            </View>
+          )}
+        </ScrollView>
       </View>
 
       {/* Trashcan Button */}
@@ -298,7 +321,6 @@ export default function CategoryPage() {
               marginTop: 16,
             }}
           >
-            {/* Cancel Button */}
             <TouchableOpacity
               onPress={() => {
                 setEditModalVisible(false);
@@ -322,8 +344,6 @@ export default function CategoryPage() {
                 <Text className={`text-sm ml-2 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>Cancel</Text>
               </View>
             </TouchableOpacity>
-
-            {/* Modify Button */}
             <TouchableOpacity
               onPress={handleSaveEditTodo}
               style={{
@@ -373,7 +393,7 @@ export default function CategoryPage() {
           <ScrollView
             style={{
               marginBottom: 16,
-              maxHeight: screenHeight * 0.8 - 120, // Adjust for TodoName, Close button, padding
+              maxHeight: screenHeight * 0.8 - 120,
             }}
           >
             <Text className={`text-base ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
@@ -390,7 +410,7 @@ export default function CategoryPage() {
           >
             <View
               className={`flex-row items-center justify-center border rounded-3xl shadow elevation-8 ${
-                theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
+                theme === 'light' ? 'bg-white border-gray-600' : 'bg-gray-800 border-gray-600'
               }`}
               style={{ width: '100%', height: '100%', paddingHorizontal: 16 }}
             >
@@ -427,7 +447,6 @@ export default function CategoryPage() {
               marginTop: 16,
             }}
           >
-            {/* Cancel Button */}
             <TouchableOpacity
               onPress={() => {
                 setDeleteModalVisible(false);
@@ -448,8 +467,6 @@ export default function CategoryPage() {
                 <Text className={`text-sm ml-2 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>Cancel</Text>
               </View>
             </TouchableOpacity>
-
-            {/* Delete Button */}
             <TouchableOpacity
               onPress={handleDeleteCompletedTodos}
               style={{

@@ -13,6 +13,7 @@ interface TodoCardProps {
   onDelete?: (id: string) => void;
   onViewComment?: (comment: string, name: string) => void;
   onSwipeableWillOpen?: (swipeable: Swipeable) => void;
+  showSeparator?: boolean;
 }
 
 export default function TodoCard({
@@ -24,11 +25,12 @@ export default function TodoCard({
   onDelete,
   onViewComment,
   onSwipeableWillOpen,
+  showSeparator = false,
 }: TodoCardProps) {
   const { theme } = useContext(ThemeContext);
   const screenWidth = Dimensions.get('window').width;
-  const cardWidth = screenWidth * 0.9; // 90% of screen width
-  const cardHeight = screenWidth * 0.1; // Reduced height
+  const cardWidth = isInputCard ? screenWidth * 0.9 : screenWidth * 0.9 - 8; // Adjust for group padding
+  const cardHeight = screenWidth * 0.1;
   const [inputText, setInputText] = useState('');
   const swipeableRef = useRef<Swipeable | null>(null);
 
@@ -44,7 +46,7 @@ export default function TodoCard({
     <TouchableOpacity
       onPress={() => todo && onEdit && onEdit(todo.id, todo.name, swipeableRef.current)}
       style={{
-        width: screenWidth * 0.18,
+        width: screenWidth * 0.16, // Slightly reduced to fit narrower card
         height: cardHeight,
         justifyContent: 'center',
         alignItems: 'center',
@@ -56,8 +58,8 @@ export default function TodoCard({
         }`}
         style={{ width: '100%', paddingHorizontal: 8, borderWidth: 1 }}
       >
-        <MaterialCommunityIcons name="pencil" size={24} color="#ffffff" />
-        <Text className="text-sm text-white ml-2">Edit</Text>
+        <MaterialCommunityIcons name="pencil" size={20} color="#ffffff" />
+        <Text className="text-xs text-white ml-1">Edit</Text>
       </View>
     </TouchableOpacity>
   );
@@ -66,7 +68,7 @@ export default function TodoCard({
     <TouchableOpacity
       onPress={() => todo && onDelete && onDelete(todo.id)}
       style={{
-        width: screenWidth * 0.18,
+        width: screenWidth * 0.16,
         height: cardHeight,
         justifyContent: 'center',
         alignItems: 'center',
@@ -78,8 +80,8 @@ export default function TodoCard({
         }`}
         style={{ width: '100%', paddingHorizontal: 8, borderWidth: 1 }}
       >
-        <MaterialCommunityIcons name="delete" size={24} color="#ffffff" />
-        <Text className="text-sm text-white ml-2">Delete</Text>
+        <MaterialCommunityIcons name="delete" size={20} color="#ffffff" />
+        <Text className="text-xs text-white ml-1">Delete</Text>
       </View>
     </TouchableOpacity>
   );
@@ -90,7 +92,7 @@ export default function TodoCard({
         style={{
           width: cardWidth,
           height: cardHeight,
-          marginVertical: 4, // 16px total spacing
+          marginVertical: 4,
           alignSelf: 'center',
         }}
       >
@@ -138,14 +140,7 @@ export default function TodoCard({
       : '#FFFFFF';
 
   return (
-    <View
-      style={{
-        width: cardWidth,
-        height: cardHeight,
-        marginVertical: 1, // 8px total spacing
-        alignSelf: 'center',
-      }}
-    >
+    <View style={{ width: cardWidth, alignSelf: 'center' }}>
       <Swipeable
         ref={swipeableRef}
         friction={1}
@@ -160,8 +155,8 @@ export default function TodoCard({
         }}
       >
         <View
-          className={`flex-row items-center border rounded-2xl shadow elevation-8 ${
-            theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
+          className={`flex-row items-center rounded-2xl shadow elevation-8 ${
+            theme === 'light' ? 'bg-white' : 'bg-gray-800'
           }`}
           style={{ width: cardWidth, height: cardHeight, paddingHorizontal: 8 }}
         >
@@ -185,6 +180,17 @@ export default function TodoCard({
           )}
         </View>
       </Swipeable>
+      {showSeparator && (
+        <View
+          style={{
+            width: cardWidth * 0.95,
+            height: 1,
+            backgroundColor: theme === 'light' ? '#D1D5DB' : '#4B5563',
+            alignSelf: 'center',
+            marginVertical: 4,
+          }}
+        />
+      )}
     </View>
   );
 }
