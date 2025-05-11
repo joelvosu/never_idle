@@ -4,6 +4,7 @@ import { ThemeContext } from '@/contexts/ThemeContext';
 import { TodoContext } from '@/contexts/TodoContext';
 import { FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Swipeable } from 'react-native-gesture-handler';
+import { router } from 'expo-router';
 
 interface CategoryListItemProps {
   category: { name: string; icon: string };
@@ -26,7 +27,7 @@ export default function CategoryListItem({
   const { todos } = useContext(TodoContext);
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
-  const displayCategoryWidth = screenWidth * 0.9 - 8; // Match TodoCard
+  const displayCategoryWidth = screenWidth * 0.9 - 8;
   const displayCategoryHeight = screenWidth * 0.1;
   const swipeableRef = useRef<Swipeable | null>(null);
 
@@ -43,6 +44,10 @@ export default function CategoryListItem({
 
   const uncompletedCircleSize = getCircleSize(uncompletedCount);
   const completedCircleSize = getCircleSize(completedCount);
+
+  const handleNavigate = () => {
+    router.push(`/category/${encodeURIComponent(category.name)}`);
+  };
 
   const renderLeftActions = () => (
     <TouchableOpacity
@@ -109,7 +114,11 @@ export default function CategoryListItem({
           }`}
           style={{ width: displayCategoryWidth, height: displayCategoryHeight, paddingHorizontal: 16 }}
         >
-          <FontAwesome6 name={category.icon} size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+          <TouchableOpacity onPress={handleNavigate}>
+            <View style={{ margin: 4 }}>
+              <FontAwesome6 name={category.icon} size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+            </View>
+          </TouchableOpacity>
           <Text
             className={`text-base ml-4 flex-1 ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}
             numberOfLines={1}
@@ -118,36 +127,40 @@ export default function CategoryListItem({
           </Text>
           <View className="flex-row items-center">
             {uncompletedCount > 0 && (
-              <View
-                className={`rounded-full border justify-center items-center ${
-                  theme === 'light' ? 'bg-red-200 border-gray-300' : 'bg-red-900 border-gray-600'
-                }`}
-                style={{
-                  width: uncompletedCircleSize,
-                  height: uncompletedCircleSize,
-                  marginLeft: 8,
-                }}
-              >
-                <Text className={`text-sm font-bold ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
-                  {uncompletedCount}
-                </Text>
-              </View>
+              <TouchableOpacity onPress={handleNavigate}>
+                <View
+                  className={`rounded-full border justify-center items-center ${
+                    theme === 'light' ? 'bg-red-200 border-gray-300' : 'bg-red-900 border-gray-600'
+                  }`}
+                  style={{
+                    width: uncompletedCircleSize,
+                    height: uncompletedCircleSize,
+                    margin: 4,
+                  }}
+                >
+                  <Text className={`text-sm font-bold ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
+                    {uncompletedCount}
+                  </Text>
+                </View>
+              </TouchableOpacity>
             )}
             {completedCount > 0 && (
-              <View
-                className={`rounded-full border justify-center items-center ${
-                  theme === 'light' ? 'bg-gray-200 border-gray-300' : 'bg-gray-800 border-gray-600'
-                }`}
-                style={{
-                  width: completedCircleSize,
-                  height: completedCircleSize,
-                  marginLeft: 8,
-                }}
-              >
-                <Text className={`text-sm font-bold ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
-                  {completedCount}
-                </Text>
-              </View>
+              <TouchableOpacity onPress={handleNavigate}>
+                <View
+                  className={`rounded-full border justify-center items-center ${
+                    theme === 'light' ? 'bg-gray-200 border-gray-300' : 'bg-gray-800 border-gray-600'
+                  }`}
+                  style={{
+                    width: completedCircleSize,
+                    height: completedCircleSize,
+                    margin: 4,
+                  }}
+                >
+                  <Text className={`text-sm font-bold ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}>
+                    {completedCount}
+                  </Text>
+                </View>
+              </TouchableOpacity>
             )}
           </View>
         </View>

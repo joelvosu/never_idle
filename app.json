@@ -2,7 +2,7 @@
   "expo": {
     "name": "Never Idle",
     "slug": "never_idle",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -14,23 +14,24 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#111827"
       },
       "permissions": [
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE"
       ],
-      "package": "com.joelvosu.never_idle"
+      "package": "com.joelvosu.never_idle",
+      "navigationBarColor": "#DBEAFE"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/splash.png"
+      "favicon": "./assets/images/icon.png"
     },
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#111827"
     },
     "description": "Organize tasks with categories, comments, and secure backup/restore.",
     "plugins": [
@@ -39,9 +40,9 @@
         "expo-splash-screen",
         {
           "android": {
-            "image": "./assets/images/splash.png",
+            "image": "./assets/images/icon.png",
             "resizeMode": "contain",
-            "backgroundColor": "#ffffff"
+            "backgroundColor": "#111827"
           }
         }
       ]

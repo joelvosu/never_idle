@@ -143,6 +143,7 @@ export default function ConfCategories() {
           position: 'absolute',
           top: 16,
           left: 16,
+          margin: 8,
         }}
       >
         <Ionicons name="arrow-back" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />

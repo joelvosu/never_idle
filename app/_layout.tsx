@@ -5,8 +5,10 @@ import { CategoryProvider } from '@/contexts/CategoryContext';
 import { TodoProvider } from '@/contexts/TodoContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useContext, useEffect } from 'react';
-import { View, Platform } from 'react-native';
+import { View, Platform, NativeModules, StatusBar } from 'react-native';
 import * as SystemUI from 'expo-system-ui';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RootLayout() {
   return (
@@ -18,10 +20,10 @@ export default function RootLayout() {
               <Stack
                 screenOptions={{
                   headerShown: false,
-                  animation: 'fade', // Consistent fade for all transitions
-                  animationDuration: 200, // Slightly faster
-                  gestureEnabled: true, // Enable Android back swipe
-                  gestureDirection: 'horizontal', // Match Android swipe
+                  animation: 'fade',
+                  animationDuration: 200,
+                  gestureEnabled: true,
+                  gestureDirection: 'horizontal',
                 }}
               >
                 <Stack.Screen name="index" options={{ headerShown: false }} />
@@ -40,21 +42,36 @@ function ThemeBackgroundWrapper({ children }: { children: React.ReactNode }) {
   const { theme } = useContext(ThemeContext);
 
   useEffect(() => {
-    if (Platform.OS === 'android') {
-      SystemUI.setBackgroundColorAsync(theme === 'light' ? '#DBEAFE' : '#111827').catch((error) =>
-        console.error('Error setting system UI background color:', error)
-      );
-    }
+    const setStatusBar = async () => {
+      if (Platform.OS === 'android') {
+        // Get initial theme from AsyncStorage to avoid race condition
+        const storedTheme = await AsyncStorage.getItem('theme');
+        const initialTheme = storedTheme ? storedTheme : theme;
+
+        // Set navigation bar color
+        SystemUI.setBackgroundColorAsync(initialTheme === 'light' ? '#DBEAFE' : '#111827').catch((error) =>
+          console.error('Error setting system UI background color:', error)
+        );
+        // Ensure status bar is translucent and themed
+        NativeModules.StatusBarManager?.setTranslucent(true);
+        NativeModules.StatusBarManager?.setStyle(initialTheme === 'light' ? 'dark-content' : 'light-content');
+        // Force status bar visibility
+        StatusBar.setHidden(false);
+        StatusBar.setBackgroundColor('transparent');
+      }
+    };
+
+    setStatusBar();
   }, [theme]);
 
   return (
     <View
       style={{
         flex: 1,
-        backgroundColor: theme === 'light' ? '#DBEAFE' : '#111827', // Matches bg-blue-100, bg-gray-900
+        backgroundColor: theme === 'light' ? '#DBEAFE' : '#111827',
       }}
     >
-      {children}
+      <SafeAreaView style={{ flex: 1 }}>{children}</SafeAreaView>
     </View>
   );
 }

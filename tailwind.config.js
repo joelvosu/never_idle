@@ -7,11 +7,11 @@ module.exports = {
     extend: {
       colors: {
         light: {
-          background: '#f0f4f8', // Light mode background (used in globals.css)
+          background: '#DBEAFE', // Light mode background (used in globals.css)
           text: '#1f2937', // Light mode text
         },
         dark: {
-          background: '#1f2937', // Dark mode background
+          background: '#111827', // Dark mode background
           text: '#f3f4f6', // Dark mode text
         },
       },
