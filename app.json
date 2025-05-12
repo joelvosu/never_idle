@@ -20,8 +20,7 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE"
       ],
-      "package": "com.joelvosu.never_idle",
-      "navigationBarColor": "#DBEAFE"
+      "package": "com.joelvosu.never_idle"
     },
     "web": {
       "bundler": "metro",

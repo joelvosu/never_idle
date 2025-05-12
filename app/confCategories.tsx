@@ -136,7 +136,7 @@ export default function ConfCategories() {
 
   return (
     <View className={`flex-1 ${theme === 'light' ? 'bg-blue-100' : 'bg-gray-900'}`}>
-      {/* Back Button */}
+      {/* Home Button */}
       <TouchableOpacity
         onPress={() => router.push('/')}
         style={{
@@ -146,7 +146,7 @@ export default function ConfCategories() {
           margin: 8,
         }}
       >
-        <Ionicons name="arrow-back" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+        <Ionicons name="home" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
       </TouchableOpacity>
 
       {/* Header Element */}

@@ -3,7 +3,7 @@ import { View, Dimensions, TouchableOpacity, FlatList, Text, TextInput, ScrollVi
 import { ThemeContext } from '@/contexts/ThemeContext';
 import { CategoryContext } from '@/contexts/CategoryContext';
 import { TodoContext } from '@/contexts/TodoContext';
-import { useLocalSearchParams, router } from 'expo-router';
+import { useLocalSearchParams, router, Link } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal from 'react-native-modal';
@@ -158,7 +158,7 @@ export default function CategoryPage() {
 
   return (
     <View className={`flex-1 ${theme === 'light' ? 'bg-blue-100' : 'bg-gray-900'}`}>
-      {/* Back Button */}
+      {/* Home Button */}
       <TouchableOpacity
         onPress={() => router.push('/')}
         style={{
@@ -168,9 +168,20 @@ export default function CategoryPage() {
           margin: 8,
         }}
       >
-        <Ionicons name="arrow-back" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+        <Ionicons name="home" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
       </TouchableOpacity>
-
+      {/* confCategories cButton */}
+      <TouchableOpacity
+        onPress={() => router.push('/confCategories')}
+        style={{
+          position: 'absolute',
+          top: 16,
+          right: 16,
+          margin: 8,
+        }}
+      >
+        <Ionicons name="settings" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
+      </TouchableOpacity>
       {/* Category Card */}
       <View
         style={{

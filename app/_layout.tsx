@@ -5,10 +5,8 @@ import { CategoryProvider } from '@/contexts/CategoryContext';
 import { TodoProvider } from '@/contexts/TodoContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useContext, useEffect } from 'react';
-import { View, Platform, NativeModules, StatusBar } from 'react-native';
-import * as SystemUI from 'expo-system-ui';
+import { View, Platform, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RootLayout() {
   return (
@@ -39,30 +37,17 @@ export default function RootLayout() {
 }
 
 function ThemeBackgroundWrapper({ children }: { children: React.ReactNode }) {
-  const { theme } = useContext(ThemeContext);
+  const { theme, isThemeLoaded } = useContext(ThemeContext);
 
   useEffect(() => {
-    const setStatusBar = async () => {
-      if (Platform.OS === 'android') {
-        // Get initial theme from AsyncStorage to avoid race condition
-        const storedTheme = await AsyncStorage.getItem('theme');
-        const initialTheme = storedTheme ? storedTheme : theme;
-
-        // Set navigation bar color
-        SystemUI.setBackgroundColorAsync(initialTheme === 'light' ? '#DBEAFE' : '#111827').catch((error) =>
-          console.error('Error setting system UI background color:', error)
-        );
-        // Ensure status bar is translucent and themed
-        NativeModules.StatusBarManager?.setTranslucent(true);
-        NativeModules.StatusBarManager?.setStyle(initialTheme === 'light' ? 'dark-content' : 'light-content');
-        // Force status bar visibility
-        StatusBar.setHidden(false);
-        StatusBar.setBackgroundColor('transparent');
-      }
-    };
-
-    setStatusBar();
-  }, [theme]);
+    if (Platform.OS === 'android' && isThemeLoaded) {
+      // Reinforce status bar style after theme is loaded
+      StatusBar.setBarStyle(theme === 'light' ? 'dark-content' : 'light-content', true);
+      StatusBar.setTranslucent(true);
+      StatusBar.setBackgroundColor('transparent', true);
+      StatusBar.setHidden(false);
+    }
+  }, [theme, isThemeLoaded]);
 
   return (
     <View
