@@ -38,6 +38,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         try {
           await NavigationBar.setBackgroundColorAsync(newTheme === 'light' ? '#DBEAFE' : '#111827');
           await NavigationBar.setButtonStyleAsync(newTheme === 'light' ? 'dark' : 'light');
+          await NavigationBar.setPositionAsync('relative');
+          await NavigationBar.setVisibilityAsync('visible');
+          await NavigationBar.setBehaviorAsync('inset-swipe');
+          await NavigationBar.setBackgroundColorAsync(newTheme === 'light' ? '#DBEAFE' : '#111827');
+          await NavigationBar.setButtonStyleAsync(newTheme === 'light' ? 'dark' : 'light');
         } catch (navError) {
           console.warn('expo-navigation-bar failed, using expo-system-ui as fallback:', navError);
         }

@@ -268,7 +268,7 @@ export default function CategoryPage() {
           height: screenWidth * 0.12,
           borderRadius: (screenWidth * 0.12) / 2,
           backgroundColor: theme === 'light' ? '#ffffff' : '#1F2937',
-          borderColor: theme === 'light' ? '#D1D5DB' : '#4B5563',
+          borderColor: theme === 'light' ? '#9CA3AF' : '#6B7280',
           borderWidth: 1,
           justifyContent: 'center',
           alignItems: 'center',
@@ -280,7 +280,7 @@ export default function CategoryPage() {
         }}
         onPress={() => setDeleteModalVisible(true)}
       >
-        <MaterialCommunityIcons name="delete" size={24} color={theme === 'light' ? '#7F1D1D' : '#FECACA'} />
+        <MaterialCommunityIcons name="delete" size={24} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
       </TouchableOpacity>
 
       {/* Edit Modal */}

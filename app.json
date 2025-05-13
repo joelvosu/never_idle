@@ -2,7 +2,7 @@
   "expo": {
     "name": "Never Idle",
     "slug": "never_idle",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#111827"

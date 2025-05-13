@@ -167,7 +167,7 @@ export default function TodoCard({
               color={iconColor}
             />
           </TouchableOpacity>
-          <Text className={`flex-1 text-base ${textColor} ${todo.completed ? 'line-through' : ''}`} numberOfLines={1}>
+          <Text className={`flex-1 text-base ${textColor} ${todo.completed ? 'line-through' : ''}`} numberOfLines={2}>
             {todo.name}
           </Text>
           {todo.comment.trim() && (

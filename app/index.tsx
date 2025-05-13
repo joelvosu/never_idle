@@ -17,7 +17,26 @@ export default function Home() {
   const containerWidth = screenWidth * 0.9; // 90% of screen width for CategoryCards
   const marginHorizontal = screenWidth * 0.05; // 5% margin on each side
 
-  const renderCategory = ({ item }: { item: { name: string; icon: string } }) => <CategoryCard category={item} />;
+  // Prepare data with placeholder items to ensure multiple of 3
+  const prepareData = () => {
+    let data = categories.length > 0 ? categories : [{ name: '', icon: 'plus' }];
+    const remainder = data.length % 3;
+    if (remainder !== 0) {
+      // Add invisible placeholder items to complete the row
+      const placeholdersNeeded = 3 - remainder;
+      const placeholders = Array(placeholdersNeeded).fill({ name: '', icon: '', isPlaceholder: true });
+      data = [...data, ...placeholders];
+    }
+    return data;
+  };
+
+  const renderCategory = ({ item }: { item: { name: string; icon: string; isPlaceholder?: boolean } }) => {
+    if (item.isPlaceholder) {
+      // Render an invisible placeholder with the same dimensions
+      return <View style={{ width: screenWidth * 0.29, height: screenWidth * 0.29 }} />;
+    }
+    return <CategoryCard category={item} />;
+  };
 
   const RowSeparator = () => <View style={{ height: screenWidth * 0.015 }} />; // 1.5% of screen width
 
@@ -75,11 +94,9 @@ export default function Home() {
         }}
       >
         <FlatList
-          data={categories.length > 0 ? categories : [{ name: '', icon: 'plus' }]}
-          renderItem={({ item }) =>
-            item.name ? renderCategory({ item }) : <CategoryCard category={{ name: '', icon: 'plus' }} />
-          }
-          keyExtractor={(item, index) => (item.name ? `${item.name}-${index}` : 'plus')}
+          data={prepareData()}
+          renderItem={renderCategory}
+          keyExtractor={(item, index) => (item.name ? `${item.name}-${index}` : `placeholder-${index}`)}
           numColumns={3}
           contentContainerStyle={{
             paddingBottom: 16,

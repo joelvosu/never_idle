@@ -40,17 +40,17 @@ export default function CategoryCard({ category }: CategoryCardProps) {
     >
       <View style={{ width: cardSize, height: cardSize }}>
         <View
-          className={`flex-1 items-center justify-center border rounded-3xl shadow elevation-8 ${
+          className={`flex-1 items-center border rounded-3xl shadow elevation-8 ${
             theme === 'light' ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-600'
           }`}
-          style={{ width: cardSize, height: cardSize }}
+          style={{ width: cardSize, height: cardSize, paddingTop: cardSize * 0.3 }}
         >
           {category && category.name ? (
             <>
               <FontAwesome6 name={category.icon} size={32} color={theme === 'light' ? '#1f2937' : '#ffffff'} />
               <Text
                 className={`text-sm mt-2 text-center ${theme === 'light' ? 'text-gray-800' : 'text-gray-100'}`}
-                numberOfLines={1}
+                numberOfLines={2}
               >
                 {category.name}
               </Text>
